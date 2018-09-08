@@ -21,10 +21,6 @@ if "sss" in sys.argv:
 
     sss = True
     print("SSH")
-GTHRESH  = 26
-for s in sys.argv:
-    if s.isNumeric()
-        GTHRESH=int(s)
 # construct the argument parser and parse the arguments
 #ap = argparse.ArgumentParser()
 #ap.add_argument("-c", "--conf", required=True,
@@ -90,7 +86,7 @@ p.ChangeDutyCycle(15)
 def opendoor():
     p.ChangeDutyCycle(5)
 
-#GTHRESH=26 		#grass threshold, default 26., input string, defualts to 26
+GTHRESH=26 		#grass threshold, default 26.
 # capture frames from the camera
 #cap = cv2.VideoCapture(sys.argv[1])
 count = 0

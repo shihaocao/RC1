@@ -76,11 +76,12 @@ def vidprocess():
         #cv2.imshow("Thresh2 Feed", thresh2)
     key = cv2.waitKey(1) & 0xFF
     #cv2.imshow("Frame Delta",frameDelta)
-
+    if key == ord("q"):
+        return False
     # clear the stream in preparation for the next frame
     if not usevid:
         rawCapture.truncate(0)
-
+    return True
 
 sss = False
 print(sys.argv)
@@ -99,9 +100,10 @@ for s in sys.argv:
         GTHRESH=int(s)
         
 usevid = False
+print(sys.argv[1])
 for s in sys.argv[1:]:
-    if s.contains('.'):
-        useVid = True
+    if '.' in s:
+        usevid = True
 
 print(str(usevid))
 # construct the argument parser and parse the arguments
@@ -124,8 +126,8 @@ if not usevid:
     camera.framerate = conf["fps"]
     rawCapture = PiRGBArray(camera, size=tuple(conf["resolution"]))
 else:
-    print("video form: " + sys.argvp[2])
-    cap = cv2.VideoCapture(sys.argv[2])
+    print("video form: " + sys.argv[1])
+    cap = cv2.VideoCapture(sys.argv[1])
 # Setup SimpleBlobDetector parameters.
 params = cv2.SimpleBlobDetector_Params()
 
@@ -182,6 +184,7 @@ if not usevid:
         # grab the raw NumPy array representing the image and initialize
         # the timestamp and occupied/unoccupied text
         frame = f.array
+        vidprocess()
 else:
     print("reading from video")
     print("is cap open: "+str(cap.isOpened()))
