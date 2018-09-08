@@ -21,5 +21,8 @@
 	
 	"dronesize": 0.11,
 	
-	"blobmin": 5
+	"blobmin": 5,
+
+	"max_thresh": 64,
+	"min_thresh": 20
 }

@@ -1,3 +1,4 @@
+#9/1/18 - dyanmically determine threshold value of grass
 # import the necessary packages from pyimagesearch.tempimage import asdf
 #TempImage
 from picamera.array import PiRGBArray
@@ -16,11 +17,14 @@ import RPi.GPIO as GPIO
 
 sss = False
 print(sys.argv)
-if len(sys.argv) == 2:
+if "sss" in sys.argv:
 
     sss = True
     print("SSH")
-
+GTHRESH  = 26
+for s in sys.argv:
+    if s.isNumeric()
+        GTHRESH=int(s)
 # construct the argument parser and parse the arguments
 #ap = argparse.ArgumentParser()
 #ap.add_argument("-c", "--conf", required=True,
@@ -86,6 +90,7 @@ p.ChangeDutyCycle(15)
 def opendoor():
     p.ChangeDutyCycle(5)
 
+#GTHRESH=26 		#grass threshold, default 26., input string, defualts to 26
 # capture frames from the camera
 #cap = cv2.VideoCapture(sys.argv[1])
 count = 0
@@ -113,7 +118,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     #ret,thresh2 = cv2.threshold(gray,195,255,cv2.THRESH_BINARY)
     gray = cv2.bitwise_not(gray)
     #64 is when we pick up on grass, 20 is when we stop seeing white, 42 is the average, calibrate on test 11
-    ret,thresh1 = cv2.threshold(gray,26,255,cv2.THRESH_BINARY)
+    ret,thresh1 = cv2.threshold(gray,GTHRESH,255,cv2.THRESH_BINARY)
     thresh2 = cv2.bitwise_not(thresh1)
     keypoints = blobber.detect(thresh1)
 
