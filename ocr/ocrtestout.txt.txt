@@ -1,0 +1,7 @@
+A QUICK BROWN FOX
+JUMPED OVER THE LAZY
+DOG 1 2 345 10
+
+a quick brown fox jumped over
+The lazy dog ?!
+
