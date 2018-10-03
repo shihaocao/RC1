@@ -1,0 +1,525 @@
+from timeit import default_timer as timer
+from random import randint
+from termcolor import colored
+
+def isPrime(x):
+  num = (int)(x**(1/2))
+  while num > 1:
+    if x%num == 0:
+      return False
+    num -=1
+  return True
+  
+def c2i(c, alphabet):
+  return alphabet.index(c)
+  
+def i2c(i, alphabet):
+  return alphabet[i]
+  
+def prepare_string(s, alphabet):
+  string = ""
+  for character in s:
+    if character in alphabet:
+      string += character
+  return string
+  
+def newFindPrimes(power, maxdist):
+  p = findPrime(power)
+  q = findPrime(power)
+  while(abs(p-q) > maxdist):
+    p = findPrime(power)
+    q = findPrime(power)
+  return [p, q]
+
+def findPrime(power):
+  x = randint(2**(power-1), 2**power)
+  upper = 2**power
+  while x&2 == 0:
+    x+=1
+    x%=upper
+  # start = timer()
+  while (millerRabinTrials(x, 10)) == False:
+    if(x%2)==0:
+      x+=1
+      x%=upper
+      if x == 0:
+        x+=1
+    while x < 2**(power-1):
+      x+=2**(power-1)
+      x%=upper
+    x+=2
+    x%=upper
+    if x == 1:
+      x+=2**(power-1)
+    # present = timer()
+    # print(present-start)
+    # if present-start > 0.05:
+    #   findPrime(power)
+  return x
+
+def millerRabin(p):
+  if p%2 == 0:
+    return False
+  r = 0
+  d = p-1
+  while(d%2 == 0):
+    d = d//2
+    r+=1
+  a = randint(2, p-1)
+  if(pow(a, d, p) == 1):
+    return True
+  if(pow(a, d, p) == p-1):
+    return True
+  x = pow(a, d, p)
+  for n in range(1, r):
+    x = pow(x, 2, p)
+    if(x==p-1):
+      return True
+  return False
+  
+def millerRabinTrials(p, n):
+  condition = True
+  for num in range(n):
+    if not millerRabin(p):
+      return False
+      condition = False
+      break
+  if(condition):
+    return True
+    
+def isPerfectSquareBad(n):
+  n = str(n)
+  if n[len(str(n))-1] == 2 or n[len(str(n)) -1 ] == 3 or n[len(str(n)) -1 ] == 7 or n[len(str(n)) -1 ] == 8:
+    return False
+  if n[len(str(n)) -1 ] == 0:
+    if not n[len(str(n)) - 2 ] == 0:
+      return False
+    while(n[len(str(n)) - 1] == 0):
+      n = n[:-1]
+  a = 0
+  for num in range(len(str(n))):
+    a+=int(n[num])
+  while(a>9):
+    temp = str(a)
+    a = 0
+    for num in range(len(str(temp))):
+      a+=int(temp[num])
+  if not a == 1 and not a==4 and not a==7 and not a==9:
+    return False
+  if n[len(str(n))-1] == 6:
+    if n[len(str(n))-2]%2 == 0:
+      return False
+  if not int(n[len(str(n))-1]) == 6:
+    if int(n[len(str(n))-2])%2 == 1:
+      return False
+  if int(n[len(str(n))-1]) == 5:
+    if not int(n[len(str(n))-2]) == 2:
+      return False
+  if int(n)%2 == 0:
+    if not int(n)%4 == 0:
+      return False
+  return True
+
+def isPerfectSquare(n):
+  x = (int)(n**0.5)
+  if(x**2==n):
+    return True
+  x+=1
+  if(x**2==n):
+    return True
+  return False
+  
+def factor(n):
+  x = (int)(n**(1/2))+1
+  while(x**2<n):
+    x+=1
+  while(True):
+    if(isPerfectSquare(x**2 - n)):
+      y = int((x**2 - n)**(1/2))
+      return [x+y, x-y]
+    else:
+      x+=1
+
+def run_trial(e):
+  start1 = timer()
+  p = findPrime(e)
+  q = findPrime(e)
+  stop1 = timer()
+  dif1 = stop1 - start1
+  n = p*q
+  start2 = timer()
+  factors = factor(n)
+  fac1 = factors[0]
+  fac2 = factors[1]
+  stop2 = timer()
+  dif2 = stop2 - start2
+  print("Between 2 to the " + str(e-1) + "th and 2 to the " + str(e) + "th power")
+  print("Found primes " + str(p) + " " + str(q))
+  print("Product " + str(n))
+  # print("Multiplied together: " + str(fac1*fac2))
+  print("Factored to (" + str(fac1) + ", " + str(fac2) + ")")
+  print("Finding primes took " + str(dif1) + " seconds")
+  print("Factoring product took " + str(dif2) + " seconds")
+  print()
+  return [dif1, dif2]
+
+def run_multiple_trials(e, n):
+  primesum = 0
+  factorsum = 0
+  for num in range(n):
+    times = run_trial(e)
+    primesum += times[0]
+    factorsum += times[1]
+  primeavg = primesum/n
+  factoravg = factorsum/n
+  print("Average time to find two primes: " + str(primeavg))
+  print("Average time to factor product: " + str(factoravg))
+
+def euclidAlg(m, a):
+  tempm = m
+  tempa = a
+  green = []
+  g1 = (int)(tempm/tempa)
+  r1 = (int)(tempm-g1*tempa)
+  tempm = tempa
+  tempa = r1
+  green.append(g1)
+  while not r1 == 1 and not r1 == 0:
+    g1 = (int)(tempm/tempa)
+    r1 = (int)(tempm-g1*tempa)
+    green.append(g1)
+    tempm = tempa
+    tempa = r1
+  blue = []
+  red = []
+  blue.append(1)
+  red.append((green[len(green)-1])*(-1))
+  for num in range(len(green)-1):
+    blue.append(red[num])
+    red.append(red[num]*((green[len(green)-2-num])*(-1))+blue[num])
+  print(red)
+  return red[len(red)-1]%m
+
+def newEuclidAlg(m, a):
+  tempm = m
+  tempa = a
+  green = []
+  g1 = (int)(tempm/tempa)
+  r1 = (int)(tempm-g1*tempa)
+  tempm = tempa
+  tempa = r1
+  green.append(g1)
+  while not r1 == 1 and not r1 == 0:
+    g1 = (int)(tempm/tempa)
+    r1 = (int)(tempm-g1*tempa)
+    green.append(g1)
+    tempm = tempa
+    tempa = r1
+  blue = []
+  red = []
+  blue.append(1)
+  red.append((green[len(green)-1])*(-1))
+  for num in range(len(green)-1):
+    blue.append(red[num])
+    red.append(red[num]*((green[len(green)-2-num])*(-1))+blue[num])
+  return [blue[len(blue)-1], red[len(red)-1]]
+  
+def rsa(plaintext, bound, e, alphabet):
+  p = findPrime(bound)
+  q = findPrime(bound)
+  m = p*q
+  phim = (p-1)*(q-1)
+  while e%p==0 or e%q==0:
+    e+=2
+  d = euclidAlg(phim, e)
+  while(d==0):
+    pq = newFindPrimes(512, 90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000)
+    p=pq[0]
+    q=pq[1]
+    m = p*q
+    phim = (p-1)*(q-1)
+    while e%p==0 or e%q==0:
+      e+=2
+    d = euclidAlg(phim, e)
+  preparedtext = prepare_string(plaintext, alphabet)
+  l = len(alphabet)
+  powl = 0
+  while(l**powl < m):
+    powl+=1
+  powl-=1
+  while not (len(preparedtext)%powl==0):
+    preparedtext+="Z"
+  substrings = []
+  for index in range(int(len(preparedtext)/powl)):
+    substrings.append(preparedtext[powl*index:powl*index + powl])
+  numbers = []
+  for index in range(len(substrings)):
+    substring = substrings[index]
+    addaddat = 0
+    for num in range(powl):
+      addaddat+=(c2i(substring[powl-num-1], alphabet)*(len(alphabet)**num))
+    numbers.append(addaddat)
+  encryptions = []
+  for num in range(len(numbers)):
+    encryptions.append(pow(numbers[num], e, m))
+  decryptions = []
+  for num in range(len(encryptions)):
+    decryptions.append(pow(encryptions[num], d, m))
+  recovery = ""
+  l = len(alphabet)
+  for num in range(len(decryptions)):
+    current = decryptions[num]
+    for index in range(1, powl+1):
+      number = int(current/(l**(powl-index)))
+      current = current - number*(l**(powl-index))
+      recovery+=i2c(number, alphabet)
+  print(colored("Your choice of low bound is two to the following power: ", 
+  "green") + colored(str(bound-1), "cyan"))
+  print(colored("Your choice of upper bound is two to the following power: ", "green") + colored(str(bound), "cyan"))
+  print(colored("Your two primes are: ", "green") + colored(str(p), "cyan") + " " + colored(str(q), "cyan"))
+  print(colored("The mod is: ", "green") + colored(str(m), "cyan"))
+  print(colored("e is: ", "green") + colored(str(e), "cyan") + colored(" and d is: ", "green") + colored(str(d), "cyan") + colored(" and if this worked, this is 1:", "green") + colored(str((e*d)%phim), "cyan"))
+  print(colored("Your input is: ", "green") + colored(plaintext, "cyan"))
+  print(colored("Your alphabet is: ", "green") + colored(alphabet, "cyan"))
+  print(colored("Prepared input is: ", "green") + colored(preparedtext, "cyan"))
+  print(colored("Alhabet length is: ", "green") + colored(str(l), "cyan") + colored(" and the highest power is ", "green") + colored(str(powl), "cyan"))
+  print(colored("Broken into substrings: ", "green") + colored(str(substrings), "cyan"))
+  print(colored("Become numbers: ", "green") + colored(str(numbers), "cyan"))
+  print(colored("Encoded to: ", "green") + colored(str(encryptions), "cyan"))
+  print(colored("Decoded to: ", "green") + colored(str(decryptions), "cyan"))
+  print(colored("Back to text: ", "green") + colored(recovery, "cyan"))
+
+def rsaEncode(plaintext, e, m, alphabet):
+  preparedtext = prepare_string(plaintext, alphabet)
+  l = len(alphabet)
+  powl = 0
+  while(l**powl < m):
+    powl+=1
+  powl-=1
+  print("powl: " + str(powl))
+  while not (len(preparedtext)%powl==0):
+    preparedtext+="Z"
+  substrings = []
+  for index in range(int(len(preparedtext)/powl)):
+    substrings.append(preparedtext[powl*index:powl*index + powl])
+  numbers = []
+  print("substrings: " + str(substrings))
+  for index in range(len(substrings)):
+    substring = substrings[index]
+    addaddat = 0
+    for num in range(powl):
+      addaddat+=(c2i(substring[powl-num-1], alphabet)*(len(alphabet)**num))
+      print("num: " + str(addaddat))
+    numbers.append(addaddat)
+  print("numbers: " + str(numbers))
+  encryptions = []
+  for num in range(len(numbers)):
+    encryptions.append(pow(numbers[num], e, m))
+  return encryptions
+
+def rsaDecode(encryptions, d, m, alphabet):
+  l = len(alphabet)
+  powl = 0
+  while(l**powl < m):
+    powl+=1
+  powl-=1
+  decryptions = []
+  encryptions = encryptions.split(', ')
+  for num in range(len(encryptions)):
+    decryptions.append(pow(int(encryptions[num]), d, m))
+  recovery = ""
+  l = len(alphabet)
+  for num in range(len(decryptions)):
+    current = decryptions[num]
+    for index in range(1, powl+1):
+      number = int(current/(l**(powl-index)))
+      current = current - number*(l**(powl-index))
+      recovery+=i2c(number, alphabet)
+  return recovery
+  
+def rsaEncodeJunk(plaintext, e, m, alphabet):
+  preparedtext = prepare_string(plaintext, alphabet)
+  l = len(alphabet)
+  powl = 0
+  while(l**powl < m):
+    powl+=1
+  powl-=1
+  
+  jstart1 = randint(0, len(preparedtext)-1)
+  jlength1 = randint(3, 20)
+  stringpart1 = preparedtext[0:jstart1] +"<"
+  for num in range(jlength1):
+    randchar = i2c(randint(0,len(alphabet)-1), alphabet)
+    while randchar =="<" or randchar == ">":
+      randchar = i2c(randint(0,len(alphabet)-1), alphabet)
+    stringpart1 += randchar
+  stringpart1 += ">"
+  stringpart1 += preparedtext[jstart1:len(preparedtext)]
+
+  jstart2 = randint(0, len(stringpart1)-1)
+  jlength2 = randint(3, 210)
+  while jstart2 < (jstart1+jlength1) and jstart2 > (jstart1):
+    jstart2 = randint(0, len(stringpart1)-1)
+  stringpart2 = stringpart1[0:jstart2] +"<"
+  for num in range(jlength2):
+    randchar = i2c(randint(0,len(alphabet)-1), alphabet)
+    while randchar =="<" or randchar == ">":
+      randchar = i2c(randint(0,len(alphabet)-1), alphabet)
+    stringpart2 += randchar
+  stringpart2 += ">"
+  stringpart2 += stringpart1[jstart2:len(stringpart1)]
+
+  jstart3 = randint(0, len(stringpart2)-1)
+  jlength3 = randint(3, 20)
+  while (jstart3 < (jstart1+jlength1) and jstart3 > (jstart1)) or (jstart3 < (jstart2+jlength2) and jstart3 > (jstart2)):
+    jstart3 = randint(0, len(stringpart2)-1)
+  stringpart3 = stringpart2[0:jstart3] +"<"
+  for num in range(jlength3):
+    randchar = i2c(randint(0,len(alphabet)-1), alphabet)
+    while randchar =="<" or randchar == ">":
+      randchar = i2c(randint(0,len(alphabet)-1), alphabet)
+    stringpart3 += randchar
+  stringpart3 += ">"
+  stringpart3 += stringpart2[jstart3:len(stringpart2)]
+
+  finalstring = stringpart3
+  if not (len(stringpart3)%powl==0):
+    dist = len(stringpart3)//powl + 1
+    finalstring += "<"
+    if dist > 1:
+      for num in range(dist-2):
+        randchar = i2c(randint(0,len(alphabet)), alphabet)
+        while randchar =="<" or randchar == ">":
+          randchar = i2c(randint(0,len(alphabet)-1), alphabet)
+        finalstring+=randchar
+      finalstring+=">"
+
+  print(finalstring)
+
+  substrings = []
+  for index in range(int(len(finalstring)/powl)):
+    substrings.append(finalstring[powl*index:powl*index + powl])
+  numbers = []
+  for index in range(len(substrings)):
+    substring = substrings[index]
+    addaddat = 0
+    for num in range(powl):
+      addaddat+=(c2i(substring[powl-num-1], alphabet)*(len(alphabet)**num))
+    numbers.append(addaddat)
+  encryptions = []
+  for num in range(len(numbers)):
+    encryptions.append(pow(numbers[num], e, m))
+  return encryptions
+
+def rsaDecodeJunk(encryptions, d, m, alphabet):
+  l = len(alphabet)
+  powl = 0
+  while(l**powl < m):
+    powl+=1
+  powl-=1
+  decryptions = []
+  encryptions = encryptions.split(', ')
+  for num in range(len(encryptions)):
+    decryptions.append(pow(int(encryptions[num]), d, m))
+  recovery = ""
+  l = len(alphabet)
+  print("Decryptions: " + str(decryptions))
+  for num in range(len(decryptions)):
+    current = decryptions[num]
+    for index in range(1, powl+1):
+      number = int(current/(l**(powl-index)))
+      current = current - number*(l**(powl-index))
+      recovery+=i2c(number, alphabet)
+  print("Recovery: " + recovery)
+  plaintext = recovery
+  
+  while "<" in plaintext:
+    pos1 = plaintext.index("<")
+    if ">" in plaintext:
+      pos2 = plaintext.index(">")
+      part1 = plaintext[:pos1]
+      part2 = plaintext[pos2+1:len(plaintext)]
+      plaintext = part1+part2
+    else:
+      plaintext = plaintext[:pos1]
+  return plaintext
+
+
+def commonModAttack(e, f, e1, e2, m, alphabet):
+  xy = newEuclidAlg(e2, e1)
+  x = xy[1]
+  y = xy[0]
+  l = len(alphabet)
+  powl = 0
+  while(l**powl < m):
+    powl+=1
+  powl-=1
+  if(x<0):
+    i = euclidAlg(m, e)
+    current = ((i**(-1*x))*(f**y))%m
+  if y<0:
+    i = euclidAlg(m, f)
+    current = ((e**x)*(i**(-1*y)))%m
+  recovery = ""
+  for index in range(1, powl+1):
+      number = int(current/(l**(powl-index)))
+      current = current - number*(l**(powl-index))
+      recovery+=i2c(number, alphabet)
+  return recovery
+
+newalphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ., []0123456789"
+alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+alpha = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz.;:-, !'0123456789"
+
+m = int(input("m"))
+print(rsaEncode(input("plaintext"), int(input("e")), m, alpha))
+message = input("message")
+d = int(input("d"))
+print(rsaDecode(message, d, m, alpha))
+# print(rsaDecodeJunk(message, d, m, alpha))
+
+# print(commonModAttack(int(input("E?")), int(input("F?")), int(input("e1?")), int(input("e2?")), int(input("m?")), alpha))
+
+# rsa(input(colored("Message?", "red")), int(input(colored("Bound?", "red"))), int(input(colored("E?", "red"))), newalphabet)
+
+
+# phim = (14712509198209-1)*(15249998708993-1)
+# m = 14712509198209*15249998708993
+# e = 65537
+# d = euclidAlg(phim, e)
+# print(d)
+# if not (input(colored("Would you like to encode?", "red"))) == "no":
+#   print(rsaEncode(input(colored("Plaintext?", "yellow")), e, m, alphabet))
+
+# if(input(colored("Would you like to decode?", "red"))) == "yes":
+#   print(rsaDecode(input(colored("encryptions?", "yellow")), d, m, alphabet))
+
+# I REVEAL TO YOU A SECRET TRUTH. NASTY BRUSSELS SPROUTS ARE THE WORST FOOD EVER CREATED. SIGNATURE [129348710293561219045692384213098475065291837410293856104574368752354612394871029586108276]
+# I REVEAL TO YOU A SECRET TRUTH. SALT AND VINEGAR CHIPS ARE THE WORST FOOD EVER CREATED. SIGNATURE [786455771834685379588950282669850118588542062416352994035757229411495455300397962388489222]
+
+# [2123847058040472551897982059788707543143523974220321001049968606088508429092262485953415476, 2298085951512248264861708943904580661650703289612125288653232741884586274303702856561805464, 1605542355318339169621090542861466652984078027850730973187182386507013553815237850804955915, 1742302843262584275566159135057228960820418759301601951492169532622093814594727289356725139]
+
+# p=findPrime(512)
+# q=findPrime(512)
+# m=p*q
+# phim=(p-1)*(q-1)
+# e=65537
+# d = euclidAlg(phim, e)
+# print("P: " + str(p))
+# print("Q: " + str(q))
+# print("M: " +str(m))
+# print("Phim: " +str(phim))
+# print("E: " +str(e))
+# print("D: " +str(d))
+
+# P: 12893641663487214663068869258211254077493152258591152813733155484518866663892571150536281384419013457489830906899587535503125073538378884412027127103220463
+# Q: 11865952705351634980501384636536648866946439389322991523156085273508106259128159836821835605810337708868349822200875758952910424556380601053342283126349457
+# M: 152995342178690669999089880073148432166526344177655412682785940970612917219250408250868260056877700355571650036175906773891095214516603080343370579845307765278343513928003817525074001183092570515860286840926286777285615059795282318286292833550562876174539968054225100408934426989382562780610927498917451338591
+# Phim: 152995342178690669999089880073148432166526344177655412682785940970612917219250408250868260056877700355571650036175906773891095214516603080343370579845307740518749145089154173954820106435189626076268638926781949888044857032822359297555305475433572646823373609873495999945639970953884468021125462129507221768672
+# E: 65537
+#D: 100492706330257675381094985542652555952705487553832683060803613240794883005585735141601324300294709358168558510570582402241328954625573535553062748532904501367328294683199104723028840528489369878162505147949747422534857571935000086697029690113813597323737183334976918529379798123988963408538501431083164860705
+
+
+
+
+# This is a sentence with completely <'5z>normal formatting and as yo<T4;'6DEfWHr0 SAA1BXgECY5CHd3BTZ>u ca<yYwklb,6r42cs.z!45A:>n see as long as you include every character in your alphabet, it will decode perfectly with no issues whatsoever, isn't that exciting!<>
