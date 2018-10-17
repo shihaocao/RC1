@@ -1,0 +1,28 @@
+{
+	"show_video": true,
+	"use_dropbox": false,
+	"dropbox_access_token": "YOUR_DROPBOX_KEY",
+	"dropbox_base_path": "YOUR_DROPBOX_PATH",
+	"min_upload_seconds": 3.0,
+	"min_motion_frames": 8,
+	"camera_warmup_time": 2.5,
+	"delta_thresh": 4,
+	"resolution": [640, 480],
+	"resolution2": [320, 240],
+	
+	"fps": 15,
+	"min_area": 250,
+	"max_area": 150000,
+	"accumulation": 0.1,
+	"empty": 0,
+	"dev": 100,
+	"timeout": 1,
+	"camdeg": 35,
+	
+	"dronesize": 0.11,
+	
+	"blobmin": 5,
+
+	"max_thresh": 64,
+	"min_thresh": 20
+}
