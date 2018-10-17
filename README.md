@@ -14,14 +14,14 @@ Your prompt should begin with a (cv), if it doesn't, run:
 ```
 source ~/.bashrc
 ```
-##Files
-FR
-nvidia
-ocr
-pi
-vids
-tensorflow
-IMAGEDETECTION
-Tests
+## Files and Folders
+FC		Flight computer code
+nvidia	     	Nvidia Tegra-specific computer vision code
+ocr	 	Tesserect optical character recognition code
+pi	 	Raspberry Pi- specific computer vision code
+vids		Videos used for CV and OCR testing, not synced to the gihub repo
+tensorflow	Tests for tensorflow ocr
+IMAGEDETECTION	?
+Tests		Old CV code
 
 
