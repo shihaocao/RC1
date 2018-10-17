@@ -4,6 +4,9 @@
 #from 9_8.2dronethreshcontour.py, edited to run on laptop
 # from picamera.array import PiRGBArray
 # from picamera import PiCamera
+
+#To run: python dronethreshcontourlaptopshape.py C:\Users\zz198\OneDrive\Desktop\RC\testvideos\redtriangle_Trim.mp4
+#can add another comment as the threshold
 import sys
 import argparse
 import warnings
