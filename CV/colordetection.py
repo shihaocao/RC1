@@ -22,6 +22,7 @@ boundaries = [
 ]
 
 
+
 for (lower, upper) in boundaries:
 	# create NumPy arrays from the boundaries
 	lower = np.array(lower, dtype = "uint8")

@@ -1,7 +1,4 @@
-#9/8/2018 - modulate script to accept video
-# import the necessary packages from pyimagesearch.tempimage import asdf
-#TempImage
-#from 9_8.2dronethreshcontour.py, edited to run on laptop
+#from dronethreshcontourlaptopcolor.py - add dictionary of colors.
 # from picamera.array import PiRGBArray
 # from picamera import PiCamera
 
@@ -52,6 +49,16 @@ def detectshape(c):
     # return the name of the shape
     return shape
 
+boundaries = {}
+#boundaries["RED"] = [[[170,100,200],[200,200,255]]]
+boundaries['WHITE'] = [[[220,220,220],[255,255,255]]]
+
+
+for col in boundaries:
+	for i in boundaries[col]:
+		i[0] = np.array(i[0], dtype = "uint8")
+		i[1] = np.array(i[1], dtype = "uint8")
+
 #bgr
 redboundary = [([170,100,200],[200,200,255])]									#for ../../testvideos/redtriangle_Trim.mp4
 (lowerred,upperred) = redboundary[0]
@@ -76,48 +83,54 @@ def vidprocess():
     else:
         frame2 = frame
 
-    maskred = cv2.inRange(frame, lowerred, upperred)
-    outputred = cv2.bitwise_and(frame,frame, mask = maskred)
-
-    # compare_img = np.zeroes((len(frame),len(frame),len(frame[0]),3),dtype="uint8")
-
-
-	# show the images
+    for COLOR in boundaries:
+        for i in range(len(boundaries[COLOR])):
+            lower = boundaries[COLOR][i][0]
+            upper = boundaries[COLOR][i][1]
 
 
-    grayred = cv2.cvtColor(outputred,cv2.COLOR_BGR2GRAY)
-    ret,threshred = cv2.threshold(grayred,1,255,cv2.THRESH_BINARY)
-    #threshred = cv2.bitwise_not(threshred)
+            mask = cv2.inRange(frame, lower, upper)
+            output = cv2.bitwise_and(frame,frame, mask = mask)
+
+            # compare_img = np.zeroes((len(frame),len(frame),len(frame[0]),3),dtype="uint8")
 
 
-    kernel = np.ones((5,5),np.uint8)
-    threshred = cv2.morphologyEx(threshred,cv2.MORPH_CLOSE,kernel,iterations = 3)			#dilate then erode - removes noise
-
-    cnts = cv2.findContours(threshred,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+			# show the images
 
 
-    if len(cnts) > 0:
-        print("RED CONTOUR DETECTED "+str(len(cnts)))
+            gray = cv2.cvtColor(output,cv2.COLOR_BGR2GRAY)
+            ret,thresh = cv2.threshold(gray,1,255,cv2.THRESH_BINARY)
+            #threshred = cv2.bitwise_not(threshred)
 
 
-    for c in cnts:
-        #print(cv2.contourArea(c))
-        if cv2.contourArea(c) > conf["max_area"]:
-            continue
-        if cv2.contourArea(c) < conf["min_area"]:
-            continue
+            kernel = np.ones((5,5),np.uint8)
+            thresh = cv2.morphologyEx(thresh,cv2.MORPH_CLOSE,kernel,iterations = 3)			#dilate then erode - removes noise
+
+            cnts = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
 
-        (x,y,w,h) = cv2.boundingRect(c)
-
-        cv2.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
-        print(detectshape(c))
-        #print("RED CONTOUR DETECTED")
+            if len(cnts) > 0:
+                print(COLOR + " CONTOUR DETECTED "+str(len(cnts)))
 
 
-    cv2.imshow("images", np.hstack([frame, outputred]))
-    cv2.imshow("Red Thresh",threshred)
+            for c in cnts:
+                #print(cv2.contourArea(c))
+                if cv2.contourArea(c) > conf["max_area"]:
+                    continue
+                if cv2.contourArea(c) < conf["min_area"]:
+                    continue
+
+
+                (x,y,w,h) = cv2.boundingRect(c)
+
+                cv2.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 2)
+                print(COLOR + detectshape(c))
+                #print("RED CONTOUR DETECTED")
+
+
+            cv2.imshow("images", np.hstack([frame, output]))
+            cv2.imshow("Thresh",thresh)
 
 
     '''
