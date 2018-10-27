@@ -25,7 +25,8 @@ vehicle = None
 shapedict = {"Triangle":"Shapes/TRIANGLE.png",\
 				"Square":"Shapes/SQUARE.png",\
 				"Trapezoid":"Shapes/TRAPEZOID.PNG",\
-				"Quarter Circle":"Shapes/CIRCLE4.PNG"\
+				"Quarter Circle":"Shapes/CIRCLE4.PNG",\
+				"Pentagon":"Shapes/PENTAGON.png"\
 			}
 for s in shapedict:
 	curimage = cv2.imread(shapedict[s])

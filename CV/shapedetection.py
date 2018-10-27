@@ -35,5 +35,3 @@ cv2.imshow("Square",SQUARE)
 cv2.imshow("Image",image)
 
 cv2.waitKey(20000)
-
-cv2.imwrite("Shapes/SQUARE.png",SQUARE)
