@@ -28,8 +28,10 @@ shapedict = {"Triangle":"Shapes/TRIANGLE.png",\
 for s in shapedict:
 	curimage = cv2.imread(shapedict[s])
 	curimage = cv2.cvtColor(curimage,cv2.COLOR_BGR2GRAY)
-	curcnts = cv2.findContours(curimage,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[0]
-	shapedict[s] = curcnts
+	ret,curimage = cv2.threshold(curimage,127,255,cv2.THRESH_BINARY)
+	cv2.imshow(s,curimage)
+	ret,curcnts,hierarchy = cv2.findContours(curimage,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+	shapedict[s] = curcnts[0]
 
 
 def detectshape(cnt):
@@ -42,6 +44,7 @@ def detectshape(cnt):
 			minvalue = curms
 			minshape = s
 
+	if(minshape == "Square"): time.sleep(5)
 	return minshape
 
 def vidprocess():
@@ -81,7 +84,8 @@ def vidprocess():
         if cv2.contourArea(c) < conf["min_area"]:
             continue
 
-        print(detectshape(c))
+        shape = detectshape(c)
+        print(shape)
         (x,y,w,h) = cv2.boundingRect(c)
 
         cv2.rectangle(frame2, (x,y), (x+w, y+h), (0,0,255), 2)
