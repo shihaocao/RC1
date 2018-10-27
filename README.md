@@ -9,7 +9,7 @@ and connect to it:
 ```
 ssh dev@ip #subsitute dev with pi or nvidia, and use the ip found above
 ```
-The password for these devices (and most things Shihao has set up) is getmeout
+The password for these devices (and most things Shihao has set up) is an official oral tradition. Get the password from a teammate.
 Your prompt should begin with a (cv), if it doesn't, run:
 ```
 source ~/.bashrc
@@ -23,5 +23,3 @@ vids		Videos used for CV and OCR testing, not synced to the gihub repo
 tensorflow	Tests for tensorflow ocr
 IMAGEDETECTION	?
 Tests		Old CV code
-
-
