@@ -23,17 +23,26 @@ vehicle = None
 
 # create shapedict
 shapedict = {"Triangle":"Shapes/TRIANGLE.png",\
-				"Square":"Shapes/SQUARE.png"\
+				"Square":"Shapes/SQUARE.png",\
+				"Trapezoid":"Shapes/TRAPEZOID.PNG",\
+				"Quarter Circle":"Shapes/CIRCLE4.PNG"\
 			}
 for s in shapedict:
 	curimage = cv2.imread(shapedict[s])
-	curimage = cv2.cvtColor(curimage,cv2.COLOR_BGR2GRAY)
-	ret,curimage = cv2.threshold(curimage,127,255,cv2.THRESH_BINARY)
-	cv2.imshow(s,curimage)
-	ret,curcnts,hierarchy = cv2.findContours(curimage,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+	curimage2 = cv2.cvtColor(curimage,cv2.COLOR_BGR2GRAY)
+	ret,curimage3 = cv2.threshold(curimage2,127,255,cv2.THRESH_BINARY_INV)					#cv detects light contours or dark background
+
+
+	curcnts = cv2.findContours(curimage3,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+	# (x,y,w,h) = cv2.boundingRect(curcnts[0])
+	#
+	# cv2.rectangle(curimage, (x,y), (x+w, y+h), (0,0,255), 2)
+	#
+	# cv2.imshow(s,curimage)
 	shapedict[s] = curcnts[0]
 
-
+#cv2.waitKey(5000)
 def detectshape(cnt):
 	minvalue = 10
 	minshape = "No Shape"
@@ -44,7 +53,7 @@ def detectshape(cnt):
 			minvalue = curms
 			minshape = s
 
-	if(minshape == "Square"): time.sleep(5)
+	if(minshape!="Triangle"): time.sleep(5)
 	return minshape
 
 def vidprocess():
