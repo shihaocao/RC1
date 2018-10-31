@@ -5,7 +5,7 @@
 # from picamera.array import PiRGBArray
 # from picamera import PiCamera
 
-#To run: python dronethreshcontourlaptopshape.py C:\Users\zz198\OneDrive\Desktop\RC\testvideos\redtriangle_Trim.mp4
+#To run: python dronethreshcontourlaptopshape2.py C:\Users\zz198\OneDrive\Desktop\RC\testvideos\redtriangle_Trim.mp4
 #can add another comment as the threshold
 import sys
 import argparse
@@ -22,13 +22,28 @@ import numpy as np
 vehicle = None
 
 # create shapedict
-shapedict = {"Triangle":"Shapes/TRIANGLE.png",\
-				"Square":"Shapes/SQUARE.png",\
+shapedict = {"Triangle":"Shapes/TRIANGLE.PNG",\
+				"Square":"Shapes/SQUARE.PNG",\
 				"Trapezoid":"Shapes/TRAPEZOID.PNG",\
 				"Quarter Circle":"Shapes/CIRCLE4.PNG",\
-				"Pentagon":"Shapes/PENTAGON.png"\
+				"Pentagon":"Shapes/PENTAGON.PNG",\
+				"Hexagon":"Shapes/HEXAGON.PNG"\
 			}
 for s in shapedict:
+	curimage = cv2.imread(shapedict[s])
+	curimage2 = cv2.cvtColor(curimage,cv2.COLOR_BGR2GRAY)
+	ret,curimage3 = cv2.threshold(curimage2,127,255,cv2.THRESH_BINARY)					#cv detects light contours or dark background
+	curimage3 = cv2.bitwise_not(curimage3)
+	curcnts = cv2.findContours(curimage3,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+#	(x,y,w,h) = cv2.boundingRect(curcnts[0])
+
+#	cv2.rectangle(curimage, (x,y), (x+w, y+h), (0,0,255), 2)
+
+#	cv2.imshow(s,curimage)
+	shapedict[s] = curcnts[0]
+
+	'''
 	curimage = cv2.imread(shapedict[s])
 	curimage2 = cv2.cvtColor(curimage,cv2.COLOR_BGR2GRAY)
 	ret,curimage3 = cv2.threshold(curimage2,127,255,cv2.THRESH_BINARY_INV)					#cv detects light contours or dark background
@@ -42,6 +57,7 @@ for s in shapedict:
 	#
 	# cv2.imshow(s,curimage)
 	shapedict[s] = curcnts[0]
+	'''
 
 #cv2.waitKey(5000)
 def detectshape(cnt):
@@ -54,13 +70,14 @@ def detectshape(cnt):
 			minvalue = curms
 			minshape = s
 
-	if(minshape!="Triangle"): time.sleep(5)
+#	if(minshape!="Triangle"): time.sleep(5)
 	return minshape
 
 def vidprocess():
     global cap, lethalpoints, nonlethal, avg, conf
     global frame, ss, thresh
     global camera, rawCapture, prevtags, usevid
+    global drawing
     timestamp = datetime.datetime.now()
     text = "Unoccupied"
 
@@ -82,6 +99,7 @@ def vidprocess():
     #64 is when we pick up on grass, 20 is when we stop seeing white, 42 is the average, calibrate on test 11
     ret,thresh1 = cv2.threshold(gray,GTHRESH,255,cv2.THRESH_BINARY)
     thresh2 = cv2.bitwise_not(thresh1)
+#    cv2.imshow('Thresh2', thresh2)
     keypoints = blobber.detect(thresh1)
 
     cnts = cv2.findContours(thresh2,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -96,9 +114,15 @@ def vidprocess():
 
         shape = detectshape(c)
         print(shape)
+        shape_cnt = shapedict[shape]
+
         (x,y,w,h) = cv2.boundingRect(c)
 
-        cv2.rectangle(frame2, (x,y), (x+w, y+h), (0,0,255), 2)
+        (x1,y1,w1,h1) = cv2.boundingRect(shape_cnt)
+
+        if drawing:
+            cv2.rectangle(frame2, (x,y), (x+w, y+h), (0,0,255), 2)
+            cv2.rectangle(frame2, (x1,y1), (x1+w1, y1+h1), (0,0,255), 2)
 
     if len(cnts) > 0:
         print("CONTOUR DETECTED "+str(len(cnts)))
@@ -110,15 +134,23 @@ def vidprocess():
     #loggedblobs = [database[x][0] for x in database if database[x][1]==0]
     frame2 = cv2.drawKeypoints(frame2, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
+#    (x,y,w,h) = cv2.boundingRect(cnts[0])
+#    print(x,y,w,h)
+#    print(w*h)
+#    cv2.rectangle(thresh1, (x,y), (x+w, y+h), (0,0,255), 2)
+
     if not sss:
         cv2.imshow("Security Feed", frame2)
         cv2.imshow("Gray Feed", gray)
         cv2.imshow("Thresh Feed", thresh1)
         #cv2.imshow("Thresh2 Feed", thresh2)
     key = cv2.waitKey(1) & 0xFF
-    #cv2.imshow("Frame Delta",frameDelta)
+	#cv2.imshow("Frame Delta",frameDelta)
+	#Keys that can be pressed during the video capture
     if key == ord("q"):
         return False
+    elif key == ord("d"):
+        drawing = not drawing
     # clear the stream in preparation for the next frame
     if not usevid:
         rawCapture.truncate(0)
@@ -227,7 +259,6 @@ motionCounter = 0
 count = 0
 if not usevid:
     for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-
         # grab the raw NumPy array representing the image and initialize
         # the timestamp and occupied/unoccupied text
         frame = f.array
@@ -235,8 +266,10 @@ if not usevid:
 else:
     print("reading from video")
     print("is cap open: "+str(cap.isOpened()))
+    drawing = False
     while cap.isOpened():
         ret, frame = cap.read()
+        count += 1
 
         if not vidprocess():
             break
