@@ -23,8 +23,13 @@ import glob
 
 vehicle = None
 
-global shapes_dict
-shapes_dict = {0: "None", 1:"Semi Circle", 2: "Quarter Circle", 3: "Triangle", 4: "Quadliteral", 5: "Pentagon", 6: "Hexagon", 7: "Septagon", 8: "Octagon"}
+#Global dictionaries
+global shapes_dict, boundaries
+shapes_dict = {-1: "None", 0: "Circle", 1:"Semi Circle", 2: "Quarter Circle", 3: "Triangle", 4: "Quadliteral", 5: "Pentagon", 6: "Hexagon", 7: "Septagon", 8: "Octagon"}
+boundaries = {}
+boundaries["RED"] = [[[170,100,200],[200,200,255]]]
+boundaries['WHITE'] = [[[220,220,220],[255,255,255]]]
+
 
 #cv2.waitKey(5000)
 def auto_canny(image, sigma=0.33):
@@ -44,14 +49,29 @@ def detectshape(frame2, edges):
     lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 20, None, 20, 25)
     print(type(lines))
     if type(lines) == type(None):
-        return 0
+        return -1
     print(lines[0])
     print(len(lines))
+    threshDist = 40
     previous = []
+    print(lines)
     for x in range(len(lines)):
         for l in lines[x]:
+            noWork = False
+            for k in range(x+1, len(lines)):
+                j = lines[k][0]
+                dist = math.sqrt(math.pow((l[0]-j[0]),2) + math.pow((l[1]-j[1]),2))
+                dist1 = math.sqrt(math.pow((l[2]-j[2]),2) + math.pow((l[3]-j[3]),2))
+                print("Distance ", dist+dist1)
+                if dist + dist1 < threshDist:
+                    noWork = True
+            if noWork:
+                continue
             previous.append(l)
             cv2.line(frame2, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
+            print('----')
+            print(l[0],l[1])
+            print(l[2],l[3])
     #        print(x2-x1,y2-y1)
     cv2.imshow('Hough Lines',frame2)
     return len(previous)
@@ -65,7 +85,7 @@ def vidprocess():
     text = "Unoccupied"
 
     # resize the frame, convert it to grayscale, and blur it
-    frame = imutils.resize(frame, width=350)
+    frame = imutils.resize(frame, width=500)
 
     if conf["empty"] == 1:
         blank = np.zeros((500,500,3),np.uint8)
@@ -83,10 +103,6 @@ def vidprocess():
     thresh2 = cv2.bitwise_not(thresh1)
     auto = auto_canny(thresh2)
 #    edges = cv2.Canny(gray,50,150,apertureSize = 3)
-    cv2.imshow("Edges",auto)
-#    cv2.waitKey(2000)
-    rhoThresh = 0
-    thetaThresh = 0#2*np.pi/100
     sides = detectshape(frame2, auto)
     print(sides)
     shape = shapes_dict[sides]
@@ -94,51 +110,12 @@ def vidprocess():
 #    cv2.imshow('Thresh2', thresh2)
     keypoints = blobber.detect(thresh1)
 
-    '''
-    cnts = cv2.findContours(thresh2,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-    cnts = sorted(cnts, key=lambda x: cv2.contourArea(x))
-
-    for c in cnts:
-        #print(cv2.contourArea(c))
-        if cv2.contourArea(c) > conf["max_area"]:
-            continue
-        if cv2.contourArea(c) < conf["min_area"]:
-            continue
-
-        shape = detectshape(c)
-        print(shape)
-        shape_cnt = shapedict[shape]
-
-        (x,y,w,h) = cv2.boundingRect(c)
-
-        (x1,y1,w1,h1) = cv2.boundingRect(shape_cnt)
-
-        if drawing:
-            cv2.rectangle(frame2, (x,y), (x+w, y+h), (0,0,255), 2)
-#            cv2.rectangle(frame2, (x1,y1), (x1+w1, y1+h1), (0,0,255), 2)
-#            cv2.rectangle(thresh1, (x,y), (x+w, y+h), (0,0,255), 2)
-            cv2.drawContours(frame2, [c], 0, (0,255,0), 3)
-
-    if len(cnts) > 0:
-        print("CONTOUR DETECTED "+str(len(cnts)))
-        #opendoor()'''
-    '''for tag in keypoints:
-            xc = tag.pt[0]
-            yc = tag.pt[1]
-            rad = tag.size'''
-    #loggedblobs = [database[x][0] for x in database if database[x][1]==0]
-#    frame2 = cv2.drawKeypoints(frame2, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-
-#    (x,y,w,h) = cv2.boundingRect(cnts[0])
-#    print(x,y,w,h)
-#    print(w*h)
-#    cv2.rectangle(thresh1, (x,y), (x+w, y+h), (0,0,255), 2)
-
     if not sss:
         cv2.imshow("Security Feed", frame2)
         cv2.imshow("Gray Feed", gray)
         cv2.imshow("Thresh Feed", thresh1)
+        cv2.imshow("Edges",auto)
+#        cv2.waitKey(2000)
         #cv2.imshow("Thresh2 Feed", thresh2)
     key = cv2.waitKey(1) & 0xFF
 	#cv2.imshow("Frame Delta",frameDelta)
