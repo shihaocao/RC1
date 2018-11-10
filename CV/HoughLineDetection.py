@@ -14,8 +14,10 @@ gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 edges = cv2.Canny(gray,50,150,apertureSize = 3)
 cv2.imshow("Edges",edges)
 #cv2.waitKey(2000)
-lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 15, None, 0, 15)
-#lines = cv2.HoughLines(edges,1,np.pi/180,0)
+#lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 15, None, 0, 15)
+lines = cv2.HoughLinesP(edges, rho=1, theta=np.pi / 200, threshold = 25, minLineLength = 20, maxLineGap = 1000)
+
+#lines = cv2.HoughLines(edges,1,np.pi/180,15)
 print(lines[0])
 print(len(lines))
 previous = []
