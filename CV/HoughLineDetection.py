@@ -45,8 +45,9 @@ for x in range(len(lines)):
 #        y2 = int(y0 - 1000*(a))
 
 #        cv2.line(img,(x1,y1),(x2,y2),(0,0,255),2)
-        cv2.line(img, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
+        cv2.line(img, (l[0], l[1]), (l[2], l[3]), (0,0,255), 1, cv2.LINE_AA)
 #        print(x2-x1,y2-y1)
 print(previous)
+print(len(previous))
 cv2.imshow('Hough Lines',img)
 cv2.waitKey(5000)

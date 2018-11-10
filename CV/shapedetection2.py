@@ -12,7 +12,7 @@ args = vars(ap.parse_args())
 image = cv2.imread(args["image"])
 image = imutils.resize(image, width = 400)
 image2 = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-ret,image3 = cv2.threshold(image2,127,255,cv2.THRESH_BINARY_INV)
+ret,image3 = cv2.threshold(image2,127,255,cv2.THRESH_BINARY_INV)					#need _INV for black on white, remove for white on black
 #image3 = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 cv2.imshow("Black and White", image3)
 cnt = cv2.findContours(image3,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -22,8 +22,8 @@ cnt = cnt[0]
 (x,y,w,h) = cv2.boundingRect(cnt)
 
 ctr = np.array(cnt).reshape((-1,1,2)).astype(np.int32)
-cv2.drawContours(image, [ctr], 0, (0,255,0), 3)
-#cv2.rectangle(image, (x,y), (x+w, y+h), (0,0,255), 2)
+#cv2.drawContours(image, [ctr], 0, (0,255,0), 3)
+cv2.rectangle(image, (x,y), (x+w, y+h), (0,0,255), 2)
 cv2.imshow("Image",image)
 
 # create shapedict
@@ -52,7 +52,7 @@ minvalue = 10
 minshape = "No Shape"
 for s in shapedict:
 	curms = cv2.matchShapes(shapedict[s],cnt,1,0.0)
-	print(curms)
+	print(s,'\t',curms)
 	if(curms < minvalue):
 		minvalue = curms
 		minshape = s
