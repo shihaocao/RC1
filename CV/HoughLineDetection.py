@@ -14,8 +14,10 @@ gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 edges = cv2.Canny(gray,50,150,apertureSize = 3)
 cv2.imshow("Edges",edges)
 #cv2.waitKey(2000)
-lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 15, None, 0, 15)
-#lines = cv2.HoughLines(edges,1,np.pi/180,0)
+#lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 15, None, 0, 15)
+lines = cv2.HoughLinesP(edges, rho=1, theta=np.pi / 200, threshold = 25, minLineLength = 20, maxLineGap = 1000)
+
+#lines = cv2.HoughLines(edges,1,np.pi/180,15)
 print(lines[0])
 print(len(lines))
 previous = []
@@ -45,8 +47,9 @@ for x in range(len(lines)):
 #        y2 = int(y0 - 1000*(a))
 
 #        cv2.line(img,(x1,y1),(x2,y2),(0,0,255),2)
-        cv2.line(img, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
+        cv2.line(img, (l[0], l[1]), (l[2], l[3]), (0,0,255), 1, cv2.LINE_AA)
 #        print(x2-x1,y2-y1)
 print(previous)
+print(len(previous))
 cv2.imshow('Hough Lines',img)
 cv2.waitKey(5000)
