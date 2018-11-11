@@ -3,18 +3,19 @@ import json
 import time
 import cv2
 import numpy
+import imutils
 
-UDP_IP = "192.168.1.53"
-UDP_PORT = 5005
+TCP_IP = '127.0.0.1'
+TCP_PORT = 5005
 pause = "PAUSE"
 quit = "QUIT"
-empty = ""
+exit = "EXIT"
 save_image = "SAVEIMG"
 send_image = "SENDIMG"
-
+count = 0
 sock = socket.socket(socket.AF_INET, # Internet
-                     socket.SOCK_STREAM) # UDP
-sock.connect((UDP_IP,UDP_PORT))
+                     socket.SOCK_STREAM) # TCP
+sock.connect((TCP_IP, TCP_PORT))
 
 print("p = pause\nq = quit\nx = end program\ns = save image\ni = send image")
 data = input("Please enter command:")
@@ -25,44 +26,56 @@ while len(data) > 0:
     elif data == "q":
         sock.send(quit.encode('utf-8'))
     elif data == "x":
-        sock.send(empty.encode('utf-8'))
+        sock.send(exit.encode('utf-8'))
     elif data == "s":
         sock.send(save_image.encode('utf-8'))
     elif data == "i":
+        data1 = input("How many frames:")
+        frame_num = int(data1)
         sock.send(send_image.encode('utf-8'))
+        sock.send(data1.encode("utf-8"))
+        start = time.time()
         print('hi')
-        buffer = 4096
-        sock.send(str(buffer).encode('utf-8'))
-        print('buffer sent')
-        width_data = sock.recv(buffer)
-        print(width_data)
-        width = int(width_data.decode('utf-8'))
-        time.sleep(0.5)
-        height_data = sock.recv(buffer)
-        height = int(height_data.decode('utf-8'))
+        for j in range(frame_num):
+            print('hi')
+            sock.send("READY".encode('utf-8'))
+            dimensions_data = sock.recv(1024)
+            [real_width,real_height,width,height] = [int(i) for i in dimensions_data.decode('utf-8').split(',')]
+#            print(real_width,real_height,width,height)
 
-        compiled = b""
-        buffer = 8192000
-        image_data = sock.recv(buffer)
-        print(width,height)
-        image = image_data.decode('utf-8')
-        image = image[0:len(image)-1]
-        print(len(image))
-        image1 = image.split(',')
-        print(len(image1))
-        fullimage = []
-        row = []
-        for i in range(int(len(image1)/3)):
-            pixel = image1[i*3:i*3+3]
-            pixel = [int(j) for j in pixel]
-            pixel = numpy.array(pixel)
-            row.append(pixel)
-            if len(row) >= height:
-                fullimage.append(numpy.array(row))
-                row = []
-        fullimage = numpy.array(fullimage)
-        print(len(fullimage))
-        print(len(fullimage[0]))
-        cv2.imwrite('createdFromSocket.png',fullimage)
-
+            buffer = 5000000
+            image_data = sock.recv(buffer)
+            print(len(image_data))
+            done_statement = sock.recv(1024)
+#            print(width,height)
+            image = image_data.decode('utf-8')
+            image = image[0:len(image)-1]
+#            print(len(image))
+            image1 = image.split(',')
+#            print(len(image1))
+            fullimage = []
+            row = []
+            for i in range(int(len(image1)/3)):
+                pixel = image1[i*3:i*3+3]
+                pixel = [int(j) for j in pixel]
+                pixel = numpy.array(pixel, dtype = "uint8")
+                row.append(pixel)
+                if len(row) >= height:
+                    fullimage.append(numpy.array(row))
+                    row = []
+            fullimage = numpy.array(fullimage)
+            print(len(fullimage))
+            print(len(fullimage[0]))
+            print(type(fullimage[0][0][0]))
+            fullimage = imutils.resize(fullimage, width=500)
+#            cv2.imwrite('createdFromTCP'+str(j)+'.png',fullimage)
+#            image_read = cv2.imread('createdFromTCP'+str(j)+'.png')
+            cv2.imshow('createdFromTCP',fullimage)
+            cv2.waitKey(5)
+#            cv2.imshow('Image',fullimage)
+#            cv2.waitKey(10)
+        cv2.destroyAllWindows()
+        end = time.time()
+        print('Time Taken: ',str(end-start))
+        print("Average Time: ", str((end-start)/frame_num))
     data = input("Please enter command:")

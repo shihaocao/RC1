@@ -9,7 +9,6 @@
 #can add another comment as the threshold
 import sys
 import argparse
-import pickle
 import warnings
 import datetime
 #import dropbox
@@ -79,7 +78,7 @@ def detectshape(frame2, edges):
 
 def vidprocess():
     global cap, lethalpoints, nonlethal, avg, conf
-    global frame, ss, thresh
+    global frame, ss, thresh, frame2
     global camera, rawCapture, prevtags, usevid
     global drawing, shapes_dict, pause, quit, key_data
     timestamp = datetime.datetime.now()
@@ -123,7 +122,7 @@ def vidprocess():
 	#Keys that can be pressed during the video capture
 	#key legend, q = quit, d = draw contours, p = pause/unpause
     if key == ord("q"):
-        quit = True
+        return False
     elif key == ord("d"):
         drawing = not drawing
     elif key == ord("p"):
@@ -250,6 +249,7 @@ stop = False
 pause = False
 quit = False
 key_data = ""
+
 def runvideo():
     global camera, cap, frame, drawing, pause, quit
     if not usevid:
@@ -271,15 +271,19 @@ def runvideo():
     cap.release()
     cv2.destroyAllWindows()
 
-def udp_recieve():
-    global pause, key_data
-    UDP_IP = "192.168.1.53"
-    UDP_PORT = 5005
+def tcp_recieve():
+    count = 0
+    global pause, key_data, frame2
+
+    TCP_IP = '127.0.0.1'
+    TCP_PORT = 5005
     sock = socket.socket(socket.AF_INET, # Internet
-                         socket.SOCK_STREAM) # UDPaddr
+                         socket.SOCK_STREAM) # TCPaddr
 	#sock1 = socket.socket(socket.AF_INET,socket.DGRAM)
-    sock.bind((UDP_IP, UDP_PORT))
+    sock.bind((TCP_IP, TCP_PORT))
+    print('Binded')
     sock.listen(1)
+    print('Listening')
     conn, info = sock.accept()
     print('hi')
     data = 'a'
@@ -292,34 +296,37 @@ def udp_recieve():
             pause = not pause
         elif data == "QUIT":
             key_data = data
+        elif data == "EXIT":
+            conn.close()
+            sock.close()
+            break
         elif data == "SAVEIMG":
             key_data = data
         elif data == 'SENDIMG':
-            print('hi')
-#            sock.sendto(pickle.dumps({'a':frame}), addr)
-            custombuffer = conn.recv(1024)
-            buffer = int(custombuffer)
-#            array = json.dumps({'img':frame})
-#            array = frame.read()
-            int1 = str(len(frame))
-            int2 = str(len(frame[0]))
-            conn.send(int1.encode('UTF-8'))
-            conn.send(int2.encode('UTF-8'))
-            print(int1)
-            print(int2)
-            key_data = 'QUIT'
-            streeng = ','.join(str(pixel) for innerlist in frame for item in innerlist for pixel in item)
-            streeng = streeng.encode('utf-8')
-            #for i in range(int(len(streeng)/buffer)+1):
-            #    sock.sendto(streeng[i*buffer:i*buffer+buffer],addr)
-            #time.sleep(1)
+            data = conn.recv(1024)
+            numofframes = int(data)
+            for k in range(numofframes):
+                data = conn.recv(1024)
+                while data.decode('utf-8') != "READY":
+                    key_data = "QUIT"
+                    break
+#                print('hi')
+                sending_frame = imutils.resize(frame2,width=125)
+#                print(len(sending_frame),len(sending_frame[0]),len(sending_frame[0][0]))
+    			#Sending dimensions of origianl and shrunk image
+                dimensions_data = str(len(frame2)) + "," + str(len(frame2[0])) + "," + str(len(sending_frame)) + "," + str(len(sending_frame[0]))
+                conn.send(dimensions_data.encode('UTF-8'))
+#                print(dimensions_data)
+#                key_data = 'QUIT'
+                #Sending image data
+                fullString = ','.join(str(pixel) for innerlist in sending_frame for item in innerlist for pixel in item)
+                fullString = fullString.encode('utf-8')
 
-            conn.sendall(streeng)
-            print('FRAME SENT')
+                conn.sendall(fullString)
+                print('FRAME SENT')
+                conn.send("DONE".encode('UTF-8'))
+#             return False
 
-
-            conn.send("DONE".encode('UTF-8'))
-            return False
     key_data = "QUIT"
     conn.close()
     sock.close()
@@ -328,8 +335,8 @@ def udp_recieve():
 #Threading
 videoThread = threading.Thread(target=runvideo)
 videoThread.start()
-udpThread = threading.Thread(target=udp_recieve)
+tcpThread = threading.Thread(target=tcp_recieve)
 
-udpThread.start()
-#cd C:\Users\ganes\Downloads\shells\RC1\CV\
-#python cannyvideowithudp.py C:\Users\ganes\Pictures\whitepentagon3.mp4
+tcpThread.start()
+#cd C:\Users\Srikar\Documents\RC1\CV
+#python cannyvideowithtcp.py C:/Users/Srikar/Documents/UAVTestVideos/whitepentagon3.mp4
