@@ -17,14 +17,30 @@ ret,image3 = cv2.threshold(image2,127,255,cv2.THRESH_BINARY_INV)					#need _INV 
 cv2.imshow("Black and White", image3)
 _,cnt,val = cv2.findContours(image3,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 print(len(cnt))
-cnt = cnt[0]
+c = cnt[0]
 #cv2.imwrite(args["image"],image3)
-(x,y,w,h) = cv2.boundingRect(cnt)
+(x,y,w,h) = cv2.boundingRect(c)
 
-ctr = np.array(cnt).reshape((-1,1,2)).astype(np.int32)
+ctr = np.array(c).reshape((-1,1,2)).astype(np.int32)
 #cv2.drawContours(image, [ctr], 0, (0,255,0), 3)
 cv2.rectangle(image, (x,y), (x+w, y+h), (0,0,255), 2)
+
+
+#COUNT VERTICES
+peri = cv2.arcLength(c, True)
+approx = cv2.approxPolyDP(c, 0.02 * peri, True)
+print("Vertices:",len(approx))
+
+#DRAW DOT AT THE Vertices
+for v in approx:
+	cv2.circle(image,(v[0][0],v[0][1]),3,(0,255,0),-1)
+
 cv2.imshow("Image",image)
+
+
+
+
+
 
 # create shapedict
 shapedict = {"Triangle":"Shapes/TRIANGLE.png",\
@@ -39,7 +55,9 @@ for s in shapedict:
 	curimage2 = cv2.cvtColor(curimage,cv2.COLOR_BGR2GRAY)
 	ret,curimage3 = cv2.threshold(curimage2,127,255,cv2.THRESH_BINARY_INV)					#cv detects light contours or dark background
 
-	_,curcnts,val = cv2.findContours(curimage3,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+	#_2,curcnts,val2 = cv2.findContours(curimage3,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+	__,curcnts,hier = cv2.findContours(curimage3,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
 
 	(x,y,w,h) = cv2.boundingRect(curcnts[0])
 
@@ -51,7 +69,7 @@ for s in shapedict:
 minvalue = 10
 minshape = "No Shape"
 for s in shapedict:
-	curms = cv2.matchShapes(shapedict[s],cnt,1,0.0)
+	curms = cv2.matchShapes(shapedict[s],c,1,0.0)
 	print(s,'\t',curms)
 	if(curms < minvalue):
 		minvalue = curms
