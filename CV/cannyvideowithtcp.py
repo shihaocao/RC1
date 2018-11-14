@@ -249,7 +249,14 @@ stop = False
 pause = False
 quit = False
 key_data = ""
-
+#frame2 = []
+#import numpy
+#for i in range(888):
+#	row = [numpy.array([0,0,0]) for j in range(500)]
+#	row = numpy.array(row)
+#	frame2.append(row)
+#frame2 = numpy.array(frame2)
+#print(len(frame2),len(frame2[0]),len(frame2[0][0]))
 def runvideo():
     global camera, cap, frame, drawing, pause, quit
     if not usevid:
@@ -303,28 +310,26 @@ def tcp_recieve():
         elif data == "SAVEIMG":
             key_data = data
         elif data == 'SENDIMG':
+            conn.send("Send number of images".encode('utf-8'))
             data = conn.recv(1024)
-            numofframes = int(data)
+            numofframes = int(data.decode('utf-8'))
+            conn.send("THANKS".encode('utf-8'))
             for k in range(numofframes):
                 data = conn.recv(1024)
                 while data.decode('utf-8') != "READY":
                     key_data = "QUIT"
                     break
-#                print('hi')
-                sending_frame = imutils.resize(frame2,width=125)
-#                print(len(sending_frame),len(sending_frame[0]),len(sending_frame[0][0]))
-    			#Sending dimensions of origianl and shrunk image
+#                crop_img = frame2[len(frame2)/2:len(frame2), 0:len(frame2[0])]
+#                crop_img = frame2[444:888, 0:500]
+                sending_frame = frame2#imutils.resize(frame2,width=250)
+    			#Sending dimensions of original and shrunk image
                 dimensions_data = str(len(frame2)) + "," + str(len(frame2[0])) + "," + str(len(sending_frame)) + "," + str(len(sending_frame[0]))
                 conn.send(dimensions_data.encode('UTF-8'))
-#                print(dimensions_data)
-#                key_data = 'QUIT'
                 #Sending image data
-                fullString = ','.join(str(pixel) for innerlist in sending_frame for item in innerlist for pixel in item)
-                fullString = fullString.encode('utf-8')
-
-                conn.sendall(fullString)
+                img_str = cv2.imencode('.jpg', sending_frame)[1].tostring()
+                conn.sendall(img_str)#img_str.encode('utf-8'))
                 print('FRAME SENT')
-                conn.send("DONE".encode('UTF-8'))
+#                conn.send("DONE".encode('UTF-8'))
 #             return False
 
     key_data = "QUIT"

@@ -270,7 +270,7 @@ def runvideo():
     cap.release()
     cv2.destroyAllWindows()
 
-def udp_recieve():
+def udp_receive():
     global pause, key_data
     UDP_IP = "127.0.0.1"
     UDP_PORT = 5005
@@ -288,6 +288,27 @@ def udp_recieve():
             key_data = data
         elif data == "SAVEIMG":
             key_data = data
+        elif data == "SENDIMG":
+            bufferStr,addr = sock.recvfrom(40)
+            buffer = int(bufferStr.decode('utf-8'))
+            print("Buffer recieved ", str(buffer))
+            dimensions_data = str(len(frame2)) + "," + str(len(frame2[0]))# + "," + str(len(sending_frame)) + "," + str(len(sending_frame[0]))
+            sock.sendto(dimensions_data.encode('UTF-8'),addr)
+            print("Dimensions sent")
+            fullString = ''.join(chr(pixel) for innerlist in frame2 for item in innerlist for pixel in item)
+            ready,addr = sock.recvfrom(20)
+            if ready.decode('utf-8') != "READY":
+                print("ERROR: ", ready)
+                return False
+            for i in range(int(len(fullString)/buffer)+1):
+                sock.sendto(fullString[i*buffer:i*buffer+buffer],addr)
+                ready,addr = sock.recvfrom(20)
+                if ready.decode('utf-8') != "READY":
+                    print("ERROR: ",ready)
+                    return False
+            sock.sendto("DONE".encode('utf-8'),addr)
+
+#			sock.
     key_data = "QUIT"
     sock.close()
 #        sock.sendto(b"Thanks for the input, anything more?",addr)
@@ -295,5 +316,5 @@ def udp_recieve():
 #Threading
 videoThread = threading.Thread(target=runvideo)
 videoThread.start()
-udpThread = threading.Thread(target=udp_recieve)
+udpThread = threading.Thread(target=udp_receive)
 udpThread.start()

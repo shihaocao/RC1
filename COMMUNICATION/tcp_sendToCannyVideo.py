@@ -30,50 +30,41 @@ while len(data) > 0:
     elif data == "s":
         sock.send(save_image.encode('utf-8'))
     elif data == "i":
+        sock.send(send_image.encode('utf-8'))
         data1 = input("How many frames:")
         frame_num = int(data1)
-        sock.send(send_image.encode('utf-8'))
+        data = sock.recv(50)
         sock.send(data1.encode("utf-8"))
+        data = sock.recv(50)
         start = time.time()
-        print('hi')
         for j in range(frame_num):
             print('hi')
             sock.send("READY".encode('utf-8'))
-            dimensions_data = sock.recv(1024)
+            dimensions_data = sock.recv(100)
+            print(dimensions_data)
             [real_width,real_height,width,height] = [int(i) for i in dimensions_data.decode('utf-8').split(',')]
-#            print(real_width,real_height,width,height)
+            print(real_width,real_height,width,height)
 
-            buffer = 5000000
+            buffer = width*height*10 + 10 #10000 just incase extra data somehow gets sent
+            print(buffer)
+            start1 = time.time()
             image_data = sock.recv(buffer)
+            print(time.time())
+            end1 = time.time()
+            print("Receiving time: ", str(end1-start1))
             print(len(image_data))
-            done_statement = sock.recv(1024)
-#            print(width,height)
-            image = image_data.decode('utf-8')
-            image = image[0:len(image)-1]
-#            print(len(image))
-            image1 = image.split(',')
-#            print(len(image1))
+            start2 = time.time()
             fullimage = []
             row = []
-            for i in range(int(len(image1)/3)):
-                pixel = image1[i*3:i*3+3]
-                pixel = [int(j) for j in pixel]
-                pixel = numpy.array(pixel, dtype = "uint8")
-                row.append(pixel)
-                if len(row) >= height:
-                    fullimage.append(numpy.array(row))
-                    row = []
-            fullimage = numpy.array(fullimage)
-            print(len(fullimage))
-            print(len(fullimage[0]))
-            print(type(fullimage[0][0][0]))
-            fullimage = imutils.resize(fullimage, width=500)
+            nparr = numpy.fromstring(image_data, numpy.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            fullimage = imutils.resize(img, width=500)
+            end2 = time.time()
+            print("Process: ", str(end2-start2))
 #            cv2.imwrite('createdFromTCP'+str(j)+'.png',fullimage)
 #            image_read = cv2.imread('createdFromTCP'+str(j)+'.png')
             cv2.imshow('createdFromTCP',fullimage)
-            cv2.waitKey(5)
-#            cv2.imshow('Image',fullimage)
-#            cv2.waitKey(10)
+            cv2.waitKey(1)
         cv2.destroyAllWindows()
         end = time.time()
         print('Time Taken: ',str(end-start))
