@@ -1,22 +1,22 @@
+#dronekit-sitl plane
+
 #from dronekit import connect, Command, LocationGlobal, VehicleMode
 import dronekit as dk
-import mavutil
+#import mavutil
 import time,sys,argparse,math
 import logging
 
 log = logging.getLogger('drone script')
 startime = time.time()
 log.info ("Connecting")
-<<<<<<< HEAD
-connection_string='tcp:127.0.0.1:5760'
-#connection_string = '/dev/ttyS0'
-=======
 
 connection_string='tcp:127.0.0.1:5760'
 #connection_string = '/dev/ttyS0'
->>>>>>> 71fe1fb6886a73ecb3f0eb72693a103a570114ac
+
+connection_string='tcp:127.0.0.1:5760'
+#connection_string = '/dev/ttyS0'
 arglist = ['parameters','gps_0','armed','mode','attitude','system_status','location']
-#vehicle = dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300, baud = 57600)
+vehicle= dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300, baud = 57600)
 log.info("Time to connection: %s" % str(time.time()-startime))
 
 cmds = vehicle.commands
