@@ -4,8 +4,11 @@ import time
 import cv2
 import numpy
 
-UDP_IP = "192.168.1.53"
+#UDP_IP = "192.168.1.53"
+#UDP_PORT = 5005
+UDP_IP = "127.0.0.1"
 UDP_PORT = 5005
+addr = (UDP_IP, UDP_PORT)
 pause = "PAUSE"
 quit = "QUIT"
 empty = ""
@@ -13,56 +16,52 @@ save_image = "SAVEIMG"
 send_image = "SENDIMG"
 
 sock = socket.socket(socket.AF_INET, # Internet
-                     socket.SOCK_STREAM) # UDP
-sock.connect((UDP_IP,UDP_PORT))
+                     socket.SOCK_DGRAM) # UDP
 
 print("p = pause\nq = quit\nx = end program\ns = save image\ni = send image")
 data = input("Please enter command:")
 #Commands legend: p = pause, q = quit video, x = end program, s = save image file
 while len(data) > 0:
     if data == "p":
-        sock.send(pause.encode('utf-8'))
-#        sock.sendto(pause.encode('utf-8'), (UDP_IP, UDP_PORT))
+#        sock.send(pause.encode('utf-8'))
+        sock.sendto(pause.encode('utf-8'), addr)
     elif data == "q":
-        sock.send(quit.encode('utf-8'))
-#        sock.sendto(quit.encode('utf-8'), (UDP_IP, UDP_PORT))
+#        sock.send(quit.encode('utf-8'))
+        sock.sendto(quit.encode('utf-8'), addr)
     elif data == "x":
-        sock.send(empty.encode('utf-8'))
-#        sock.sendto(empty.encode('utf-8'), (UDP_IP, UDP_PORT))
+#        sock.send(empty.encode('utf-8'))
+        sock.sendto(empty.encode('utf-8'), addr)
     elif data == "s":
-        sock.send(save_image.encode('utf-8'))
-#        sock.sendto(save_image.encode('utf-8'), (UDP_IP, UDP_PORT))
+#        sock.send(save_image.encode('utf-8'))
+        sock.sendto(save_image.encode('utf-8'), addr)
     elif data == "i":
-        sock.send(send_image.encode('utf-8'))
-#        buffer = 8192*2
+#        sock.send(send_image.encode('utf-8'))
         print('hi')
         buffer = 4096
-        sock.send(str(buffer).encode('utf-8'))
+        sock.sendto(str(buffer).encode('utf-8'),addr)
         print('buffer sent')
-        width_data = sock.recv(buffer)
-        print(width_data)
-        width = int(width_data.decode('utf-8'))
-        time.sleep(0.5)
-        height_data = sock.recv(buffer)
-        height = int(height_data.decode('utf-8'))
-
-        compiled = b""
-        buffer = 8192000
-        image_data = sock.recv(buffer)
-#        while image_data != "DONE".encode('utf-8'):
-#            compiled += image_data
-#            image_data,addr = sock.recv(buffer)
-#            print(image_data)
-#            print(image_data)
-#        done_message = sock.recv(buffer)
-#        print(done_message.decode('utf-8'))
+        dimensions_data,addr = sock.recvfrom(1000)
+        dimensions_array = dimensions_data.decode('utf-8').split(",")
+        width = int(dimensions_array[0])
+        height = int(dimensions_array[1])
         print(width,height)
-#        print(compiled)
-        image = image_data.decode('utf-8')
+        sock.sendto("READY".encode('utf-8'),addr)
+        image_data,addr = sock.recvfrom(buffer)
+        compiled = b""
+        while image_data != "DONE".encode('utf-8'):
+            compiled += image_data
+            image_data,addr = sock.recvfrom(buffer)
+            print(image_data)
+            sock.sendto("READY".encode('utf-8'),addr)
+        done_message,addr = sock.recvfrom(buffer)
+        print(done_message.decode('utf-8'))
+        print(len(compiled))
+#        image = image_data.decode('utf-8')
 #        image = image.replace(' ','')
+        '''
         image = image[0:len(image)-1]
         print(len(image))
-        image1 = image.split(',')
+        image1 = image
         print(len(image1))
         fullimage = []
         row = []
@@ -87,9 +86,8 @@ while len(data) > 0:
         #print(len(image))
         #print(image)
 #        image = cv2.imread(image)
-
+         '''
 #        imagedata_arr = pickle.loads(image_data)
 #        cv2.imwrite("Send.png",imagedata_arr)
-
 
     data = input("Please enter command:")
