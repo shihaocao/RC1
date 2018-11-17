@@ -264,6 +264,7 @@ def runvideo():
             # grab the raw NumPy array representing the image and initialize
             # the timestamp and occupied/unoccupied text
             frame = f.array
+            print(type(frame))
             vidprocess()
     else:
         print("reading from video")
@@ -282,7 +283,7 @@ def tcp_recieve():
     count = 0
     global pause, key_data, frame2
 
-    TCP_IP = '127.0.0.1'
+    TCP_IP = '192.168.1.245'
     TCP_PORT = 5005
     sock = socket.socket(socket.AF_INET, # Internet
                          socket.SOCK_STREAM) # TCPaddr
@@ -310,13 +311,10 @@ def tcp_recieve():
         elif data == "SAVEIMG":
             key_data = data
         elif data == 'SENDIMG':
-            conn.send("Send number of images".encode('utf-8'))
             data = conn.recv(1024)
-            numofframes = int(data.decode('utf-8'))
-            conn.send("THANKS".encode('utf-8'))
-            for k in range(numofframes):
-                data = conn.recv(1024)
-                while data.decode('utf-8') != "READY":
+            while data.decode('utf-8') != "ALLDONE":
+                if data.decode('utf-8') != "DIMENSIONS":
+                    print(data.decode('utf-8'))
                     key_data = "QUIT"
                     break
 #                crop_img = frame2[len(frame2)/2:len(frame2), 0:len(frame2[0])]
@@ -325,12 +323,18 @@ def tcp_recieve():
     			#Sending dimensions of original and shrunk image
                 dimensions_data = str(len(frame2)) + "," + str(len(frame2[0])) + "," + str(len(sending_frame)) + "," + str(len(sending_frame[0]))
                 conn.send(dimensions_data.encode('UTF-8'))
-                #Sending image data
                 img_str = cv2.imencode('.jpg', sending_frame)[1].tostring()
+                data = conn.recv(1024)
+                if data.decode('utf-8') != "FRAME":
+                    key_data = "QUIT"
+                    print(data.decode('utf-8'))
+                    break
+                #Sending image data
                 conn.sendall(img_str)#img_str.encode('utf-8'))
                 print('FRAME SENT')
 #                conn.send("DONE".encode('UTF-8'))
 #             return False
+                data = conn.recv(1024)
 
     key_data = "QUIT"
     conn.close()
