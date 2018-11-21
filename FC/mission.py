@@ -1,6 +1,6 @@
 #from dronekit import connect, Command, LocationGlobal, VehicleMode
 import dronekit as dk
-import mavutil
+from pymavlink import mavutil
 import time,sys,argparse,math
 import logging
 
