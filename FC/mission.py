@@ -6,13 +6,14 @@ from pymavlink import mavutil
 import time,sys,argparse,math
 import logging
 import dronekit_sitl
+import dronekit
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger('drone script')
 
 
 parser = argparse.ArgumentParser(description='Demonstrates mission import/export from a file.')
-parser.add_argument('-s', action='store_true', 
+parser.add_argument('-s', action='store_true',
                    help="Flag to start simulated vehicle")
 args = parser.parse_args()
 
