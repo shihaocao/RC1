@@ -85,7 +85,7 @@ def vidprocess():
     text = "Unoccupied"
 
     # resize the frame, convert it to grayscale, and blur it
-    frame = imutils.resize(frame, width=500)
+#    frame = imutils.resize(frame, width=500)
 
     if conf["empty"] == 1:
         blank = np.zeros((500,500,3),np.uint8)
@@ -103,10 +103,10 @@ def vidprocess():
     thresh2 = cv2.bitwise_not(thresh1)
     auto = auto_canny(thresh2)
 #    edges = cv2.Canny(gray,50,150,apertureSize = 3)
-    sides = detectshape(frame2, auto)
-    print(sides)
-    shape = shapes_dict[sides]
-    print(shape)
+#    sides = detectshape(frame2, auto)
+#    print(sides)
+#    shape = shapes_dict[sides]
+#    print(shape)
 #    cv2.imshow('Thresh2', thresh2)
     keypoints = blobber.detect(thresh1)
 
@@ -169,7 +169,7 @@ print(sys.argv[1])
 for s in sys.argv[1:]:
     if '.' in s:
         usevid = True
-
+usevid = True
 # construct the argument parser and parse the arguments
 #ap = argparse.ArgumentParser()
 #ap.add_argument("-c", "--conf", required=True,
@@ -264,6 +264,7 @@ def runvideo():
             # grab the raw NumPy array representing the image and initialize
             # the timestamp and occupied/unoccupied text
             frame = f.array
+            print(type(frame))
             vidprocess()
     else:
         print("reading from video")
@@ -299,6 +300,7 @@ def tcp_recieve():
         data = conn.recv(1024) # buffer size is 1024 bytes
         data = data.decode('utf-8')
         print(data)
+        print(data)
         if data == "PAUSE":
             pause = not pause
         elif data == "QUIT":
@@ -310,27 +312,42 @@ def tcp_recieve():
         elif data == "SAVEIMG":
             key_data = data
         elif data == 'SENDIMG':
-            conn.send("Send number of images".encode('utf-8'))
+            print('sendimg')
+            conn.send("READY".encode('utf-8'))
+            print('sent')
             data = conn.recv(1024)
-            numofframes = int(data.decode('utf-8'))
-            conn.send("THANKS".encode('utf-8'))
-            for k in range(numofframes):
-                data = conn.recv(1024)
-                while data.decode('utf-8') != "READY":
+#            print(data)
+#            print("DATAAAAAAAAAAAAAAAA",data.decode('utf-8'))
+            count = 0
+            while data.decode('utf-8') != "ALLDONE":
+                if data.decode('utf-8') != "DIMENSIONS":
+                    print(data.decode('utf-8'))
                     key_data = "QUIT"
                     break
 #                crop_img = frame2[len(frame2)/2:len(frame2), 0:len(frame2[0])]
 #                crop_img = frame2[444:888, 0:500]
                 sending_frame = frame2#imutils.resize(frame2,width=250)
+                sending_frame = imutils.resize(sending_frame,width = 4000)
     			#Sending dimensions of original and shrunk image
                 dimensions_data = str(len(frame2)) + "," + str(len(frame2[0])) + "," + str(len(sending_frame)) + "," + str(len(sending_frame[0]))
                 conn.send(dimensions_data.encode('UTF-8'))
-                #Sending image data
+                start_time = time.time()
                 img_str = cv2.imencode('.jpg', sending_frame)[1].tostring()
+                end_time = time.time()
+                print(end_time-start_time)
+                data = conn.recv(1024)
+                if data.decode('utf-8') != "FRAME":
+                    key_data = "QUIT"
+                    print(data.decode('utf-8'))
+                    break
+                #Sending image data
+                print(str(count),'SENDING',str(time.time()))
                 conn.sendall(img_str)#img_str.encode('utf-8'))
                 print('FRAME SENT')
 #                conn.send("DONE".encode('UTF-8'))
 #             return False
+                data = conn.recv(1024)
+                count += 1
 
     key_data = "QUIT"
     conn.close()
@@ -340,6 +357,7 @@ def tcp_recieve():
 #Threading
 videoThread = threading.Thread(target=runvideo)
 videoThread.start()
+
 tcpThread = threading.Thread(target=tcp_recieve)
 
 tcpThread.start()
