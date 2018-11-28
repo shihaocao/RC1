@@ -1,15 +1,12 @@
-#from dronekit import connect, Command, LocationGlobal, VehicleMode
+from dronekit import connect, Command, LocationGlobal, VehicleMode
 import dronekit as dk
 from pymavlink import mavutil
 import time,sys,argparse,math
 import logging
 import dronekit_sitl
-<<<<<<< HEAD
 import dronekit
 
-=======
 # heavyily influenced by https://github.com/dronekit/dronekit-python/blob/master/examples/mission_import_export/mission_import_export.py
->>>>>>> 69c3e2894827d08df082fe5a96b058e389717aa4
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger('drone script')
 parser = argparse.ArgumentParser(description='Demonstrates mission import/export from a file.')
@@ -140,8 +137,8 @@ def printfile(aFileName):
             print(' %s' % line.strip())        
 
 
-import_mission_filename = 'mpmission.txt'
-export_mission_filename = 'exportedmission.txt'
+import_mission_filename = 'mission.waypoints'
+export_mission_filename = 'exportedmission.waypoints'
 
 vehicle = initvehicle()
 
@@ -150,10 +147,10 @@ print "Autopilot Firmware version: %s" % vehicle.version
 
 
 #Upload mission from file
-#upload_mission(import_mission_filename)
+upload_mission(import_mission_filename)
 
 #Download mission we just uploaded and save to a file
-#save_mission(export_mission_filename)
+save_mission(export_mission_filename)
 
 #Close vehicle object before exiting script
 print("Close vehicle object")
