@@ -137,20 +137,29 @@ def printfile(aFileName):
             print(' %s' % line.strip())        
 
 
-import_mission_filename = 'mission.waypoints'
-export_mission_filename = 'exportedmission.waypoints'
+mission1in = 'mission.waypoints'
+mission1out = 'exportedmission.waypoints'
+mission2in = 'mission2.waypoints'
+mission2out ='exportedmission2.waypints'
 
 vehicle = initvehicle()
 
 print "Autopilot Firmware version: %s" % vehicle.version
 
+def loiter_upload_mission(aFileName):
+    vehicle.mode = VehicleMode("LOITER")
+    # NOTE: automatic reindexing on upload
+    log.info("Confirm Loitering: %s" % vehicle.mode)
+    upload_mission(aFileName)
+    vehicle.mode = VehicleMode("AUTO")
+    log.info("Confirm Autopilot: %s" % vehicle.mode.name)
+    log.info("Flying new mission")
 
+upload_mission(mission1in)
+save_mission(mission1out)
 
-#Upload mission from file
-upload_mission(import_mission_filename)
-
-#Download mission we just uploaded and save to a file
-save_mission(export_mission_filename)
+loiter_upload_mission(mission2in)
+save_mission_mission(mission2out)
 
 #Close vehicle object before exiting script
 print("Close vehicle object")
@@ -168,4 +177,3 @@ if sitl is not None:
 #printfile(export_mission_filename)
 
 print('done')
-time.sleep(1000000000)
