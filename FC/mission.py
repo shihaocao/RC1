@@ -17,15 +17,15 @@ args = parser.parse_args()
 sitl=None
 def initvehicle():
     if args.s:
-        #sitl = dronekit_sitl.start_default()
-        sitl = dronekit_sitl.SITL() # load a binary path (optional)
+        sitl = dronekit_sitl.SITL()
+        #default = dronekit_sitl.SITL() # load a binary path (optional)
         sitl.download("plane", "3.3.0", verbose=True) 
         launchargs = []
         sitl.launch(launchargs, verbose=True, await_ready=True, restart=True)
         #sitl.block_until_ready(verbose=True) # explicitly wait until receiving commands
-        connection_string = sitl.connection_string()
+        #connection_string = sitl.connection_string()
         #print("connect to: "+connection_string)
-        #connection_string='tcp:127.0.0.1:5760'
+        connection_string='tcp:127.0.0.1:5760'
     else:
         connection_string = '/dev/ttyS0'
     arglist = ['parameters','gps_0','armed','mode','attitude','system_status','location']
@@ -136,16 +136,6 @@ def printfile(aFileName):
         for line in f:
             print(' %s' % line.strip())        
 
-
-mission1in = 'mission.waypoints'
-mission1out = 'exportedmission.waypoints'
-mission2in = 'mission2.waypoints'
-mission2out ='exportedmission2.waypints'
-
-vehicle = initvehicle()
-
-print "Autopilot Firmware version: %s" % vehicle.version
-
 def loiter_upload_mission(aFileName):
     vehicle.mode = VehicleMode("LOITER")
     # NOTE: automatic reindexing on upload
@@ -154,7 +144,16 @@ def loiter_upload_mission(aFileName):
     vehicle.mode = VehicleMode("AUTO")
     log.info("Confirm Autopilot: %s" % vehicle.mode.name)
     log.info("Flying new mission")
+mission1in = 'mission.waypoints'
+mission1out = 'exportedmission.waypoints'
+mission2in = 'mission2.waypoints'
+mission2out ='exportedmission2.waypints'
 
+vehicle = initvehicle()
+
+print("Autopilot Firmware version: %s" % vehicle.version)
+
+    
 upload_mission(mission1in)
 save_mission(mission1out)
 
