@@ -16,21 +16,23 @@ args = parser.parse_args()
 
 sitl=None
 def initvehicle():
+    print("Initializing")
     if args.s:
-        sitl = dronekit_sitl.SITL()
+#        sitl = dronekit_sitl.SITL()
+        sitl = dronekit_sitl.start_default()
         #default = dronekit_sitl.SITL() # load a binary path (optional)
-        sitl.download("plane", "3.3.0", verbose=True) 
+        sitl.download("plane", "3.3.0", verbose=True)
         launchargs = []
-        sitl.launch(launchargs, verbose=True, await_ready=True, restart=True)
         #sitl.block_until_ready(verbose=True) # explicitly wait until receiving commands
         #connection_string = sitl.connection_string()
-        #print("connect to: "+connection_string)
+        print("Setting connection string")
+#        connection_string='tcp:192.168.0.10:5760'
         connection_string='tcp:127.0.0.1:5760'
     else:
         connection_string = '/dev/ttyS0'
     arglist = ['parameters','gps_0','armed','mode','attitude','system_status','location']
     startime = time.time()
-    log.info ("Connecting")
+    log.info("Connecting")
     vehicle= dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300)#, baud = 57600)
     log.info("Time to connection: %s" % str(time.time()-startime))
     while not vehicle.is_armable:
@@ -74,11 +76,11 @@ def readmission(aFileName):
 
 def upload_mission(aFileName):
     """
-    Upload a mission from a file. 
+    Upload a mission from a file.
     """
     #Read mission from file
     missionlist = readmission(aFileName)
-    
+
     print("\nUpload mission from a file: %s" % aFileName)
     #Clear existing mission from vehicle
     print(' Clear mission')
@@ -89,7 +91,7 @@ def upload_mission(aFileName):
         cmds.add(command)
     print(' Upload mission')
     vehicle.commands.upload()
-
+    print(' Done uploading mission ')
 
 def download_mission():
     """
@@ -107,10 +109,10 @@ def download_mission():
 
 def save_mission(aFileName):
     """
-    Save a mission in the Waypoint file format 
+    Save a mission in the Waypoint file format
     (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).
     """
-    print("\nSave mission from Vehicle to file: %s" % aFileName)    
+    print("\nSave mission from Vehicle to file: %s" % aFileName)
     #Download mission from vehicle
     missionlist = download_mission()
     #Add file-format information
@@ -125,8 +127,8 @@ def save_mission(aFileName):
     with open(aFileName, 'w') as file_:
         print(" Write mission to file")
         file_.write(output)
-        
-        
+
+
 def printfile(aFileName):
     """
     Print a mission file to demonstrate "round trip"
@@ -134,7 +136,7 @@ def printfile(aFileName):
     print("\nMission file: %s" % aFileName)
     with open(aFileName) as f:
         for line in f:
-            print(' %s' % line.strip())        
+            print(' %s' % line.strip())
 
 def loiter_upload_mission(aFileName):
     vehicle.mode = VehicleMode("LOITER")
@@ -144,21 +146,24 @@ def loiter_upload_mission(aFileName):
     vehicle.mode = VehicleMode("AUTO")
     log.info("Confirm Autopilot: %s" % vehicle.mode.name)
     log.info("Flying new mission")
+
 mission1in = 'mission.waypoints'
 mission1out = 'exportedmission.waypoints'
 mission2in = 'mission2.waypoints'
-mission2out ='exportedmission2.waypints'
+mission2out ='exportedmission2.waypoints'
 
 vehicle = initvehicle()
 
 print("Autopilot Firmware version: %s" % vehicle.version)
 
-    
 upload_mission(mission1in)
 save_mission(mission1out)
+print("waiting")
+time.sleep(10)
+print("done waiting")
 
 loiter_upload_mission(mission2in)
-save_mission_mission(mission2out)
+save_mission(mission2out)
 
 #Close vehicle object before exiting script
 print("Close vehicle object")
