@@ -24,8 +24,10 @@ def initvehicle():
         sitl.launch(launchargs, verbose=True, await_ready=True, restart=True)
         #sitl.block_until_ready(verbose=True) # explicitly wait until receiving commands
         #connection_string = sitl.connection_string()
-        #print("connect to: "+connection_string)
-        connection_string='tcp:127.0.0.1:5760'
+        connection_string='127.0.0.1:14550'
+        key = raw_input("connect to: "+connection_string+"?")
+        if key != "y":
+            exit(1)        
     else:
         connection_string = '/dev/ttyS0'
     arglist = ['parameters','gps_0','armed','mode','attitude','system_status','location']
@@ -89,6 +91,7 @@ def upload_mission(aFileName):
         cmds.add(command)
     print(' Upload mission')
     vehicle.commands.upload()
+    print('done uplaoding')
 
 
 def download_mission():
