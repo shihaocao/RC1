@@ -89,9 +89,9 @@ def upload_mission(aFileName):
     #Add new mission to vehicle
     for command in missionlist:
         cmds.add(command)
-    print(' Upload mission')
+    print(' Uploading mission')
     vehicle.commands.upload()
-    print('done uplaoding')
+    print('done uploading')
 
 
 def download_mission():
@@ -147,21 +147,23 @@ def loiter_upload_mission(aFileName):
     vehicle.mode = VehicleMode("AUTO")
     log.info("Confirm Autopilot: %s" % vehicle.mode.name)
     log.info("Flying new mission")
-mission1in = 'mission.waypoints'
-mission1out = 'exportedmission.waypoints'
+
+mission1in = 'leftmission.waypoints'
+mission1out = 'exportedleftmission.waypoints'
 mission2in = 'mission2.waypoints'
 mission2out ='exportedmission2.waypints'
 
 vehicle = initvehicle()
+vehicle.block_until_ready(verbose=True)
 
 print("Autopilot Firmware version: %s" % vehicle.version)
-
+time.sleep(10)
     
 upload_mission(mission1in)
 save_mission(mission1out)
 
-loiter_upload_mission(mission2in)
-save_mission_mission(mission2out)
+#loiter_upload_mission(mission2in)
+#save_mission_mission(mission2out)
 
 #Close vehicle object before exiting script
 print("Close vehicle object")
