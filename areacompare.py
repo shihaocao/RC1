@@ -12,10 +12,10 @@ kern = np.ones( ( 1, 1 ), np.uint8 )
 i = 0
 while True:
     i+=1
-    #print( i )
+    print( i )
     _,cimg = frame.read()
 
-    cimg = cv2.imread( 'test.png' )
+    #cimg = cv2.imread( 'test.png' )
 
     cimgh, cimgw, _ = cimg.shape
 
@@ -46,9 +46,11 @@ while True:
     for o in contours:
         cv2.fillPoly( cMask, pts = [ o ], color = 255 )
         pcontavg = cv2.meanStdDev( bwcimg, mask = cMask )
-        pcontmodavg = cv2.meanStdDev( bwcimg, mask = cv2.dilate( cMask, np.ones( ( 5, 5 ), np.uint8 ), iterations = 1 ) )
-        print( pcontavg[ 1 ][ 0 ], pcontmodavg[ 1 ][ 0 ] )
-        if(  abs( pcontavg[ 1 ][ 0 ] - pcontmodavg[ 1 ][ 0 ] ) < 25 and abs( pcontavg[ 1 ][ 0 ] - pcontmodavg[ 1 ][ 0 ] ) > 15 ):
+        pcontmodavg = cv2.meanStdDev( bwcimg, mask = cv2.bitwise_xor( cv2.dilate( cMask, np.ones( ( 5, 5 ), np.uint8 ), iterations = 3 ), cMask ) )
+        #For this if statement, it appears that the magic value for the blue star (greyscaled) example is between 10.0125 and 10.01, and the splotches of white tend to fall within a seperate but similar range
+        #Having an upper bound may not work later for different targets, notably white one
+        #A value of ten should pick up many dull objects in theory
+        if( abs( pcontavg[ 1 ][ 0 ] - pcontmodavg[ 1 ][ 0 ] ) > 10.0 ):
             fMask = cv2.bitwise_or( fMask, cMask )
         cMask = np.zeros( ( cimgh, cimgw ), np.uint8 )
 
