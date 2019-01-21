@@ -19,7 +19,9 @@ while True:
 
     cimgh, cimgw, _ = cimg.shape
 
-    cimg = cv2.blur( cimg, ( 3, 3 ) )
+    cimg = cv2.blur( cimg, ( 1, 1 ) )   #Quick blur removes some of the worst artifacts
+
+    bwcimg = cv2.cvtColor( cimg, cv2.COLOR_BGR2GRAY )
     '''This section isolates areas'''
     diff = cv2.cvtColor( cv2.bitwise_xor( cimg, cv2.blur( cimg, ( 5, 5 ) ) ), cv2.COLOR_BGR2GRAY )
     white1 = np.array( [ 10 ] )
@@ -43,11 +45,12 @@ while True:
     cMask = np.zeros( ( cimgh, cimgw ), np.uint8 )
     for o in contours:
         cv2.fillPoly( cMask, pts = [ o ], color = 255 )
-        pcontavg = cv2.meanStdDev( cimg, mask = cMask )
-        pcontmodavg = cv2.meanStdDev( cimg, mask = cv2.dilate( cMask, np.ones( ( 15, 15 ), np.uint8 ), iterations = 15 ) )
-        if( ( ( pcontavg[ 0 ][ 0 ] + pcontmodavg[ 0 ][ 0 ] ** 2 + ( pcontavg[ 0 ][ 1 ] + pcontmodavg[ 0 ][ 1 ] ) ** 2 + ( pcontavg[ 0 ][ 2 ] + pcontmodavg[ 0 ][ 2 ] ) ** 2 ) ** .5 < 393 ) ):
+        pcontavg = cv2.meanStdDev( bwcimg, mask = cMask )
+        pcontmodavg = cv2.meanStdDev( bwcimg, mask = cv2.dilate( cMask, np.ones( ( 5, 5 ), np.uint8 ), iterations = 1 ) )
+        print( pcontavg[ 1 ][ 0 ], pcontmodavg[ 1 ][ 0 ] )
+        if(  abs( pcontavg[ 1 ][ 0 ] - pcontmodavg[ 1 ][ 0 ] ) < 25 and abs( pcontavg[ 1 ][ 0 ] - pcontmodavg[ 1 ][ 0 ] ) > 15 ):
             fMask = cv2.bitwise_or( fMask, cMask )
-        mask = np.zeros( ( cimgh, cimgw ) )
+        cMask = np.zeros( ( cimgh, cimgw ), np.uint8 )
 
     '''Just some other things, display mostly'''
     cv2.imshow( 'ori', cimg )
