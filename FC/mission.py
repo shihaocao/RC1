@@ -1,4 +1,4 @@
-from dronekit import connect, Command, LocationGlobal, VehicleMode
+from dronekit import connect, Command, LocationGlobal, VehicleMode, LocationGlobalRelative
 import dronekit as dk
 from pymavlink import mavutil
 import time,sys,argparse,math
@@ -19,15 +19,15 @@ def initvehicle():
     if args.s:
         sitl = dronekit_sitl.SITL()
         #default = dronekit_sitl.SITL() # load a binary path (optional)
-        sitl.download("plane", "3.3.0", verbose=True) 
-        launchargs = []
+        sitl.download("plane", "3.3.0", verbose=True)
+        launchargs = []#'--home=38.7874145508,-77.2792434692,100.0,1,']
         sitl.launch(launchargs, verbose=True, await_ready=True, restart=True)
         #sitl.block_until_ready(verbose=True) # explicitly wait until receiving commands
         #connection_string = sitl.connection_string()
         connection_string='127.0.0.1:14550'
         key = raw_input("connect to: "+connection_string+"?")
         if key != "y":
-            exit(1)        
+            exit(1)
     else:
         connection_string = '/dev/ttyS0'
     arglist = ['parameters','gps_0','armed','mode','attitude','system_status','location']
@@ -35,9 +35,8 @@ def initvehicle():
     log.info ("Connecting")
     vehicle= dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300)#, baud = 57600)
     log.info("Time to connection: %s" % str(time.time()-startime))
-    while not vehicle.is_armable:
-        log.info(" Waiting for vehicle to initialise...")
-        time.sleep(1)
+
+    arm_and_takeoff(vehicle, 200)
     return vehicle
 
 
@@ -76,11 +75,11 @@ def readmission(aFileName):
 
 def upload_mission(aFileName):
     """
-    Upload a mission from a file. 
+    Upload a mission from a file.
     """
     #Read mission from file
     missionlist = readmission(aFileName)
-    
+
     print("\nUpload mission from a file: %s" % aFileName)
     #Clear existing mission from vehicle
     print(' Clear mission')
@@ -91,7 +90,7 @@ def upload_mission(aFileName):
         cmds.add(command)
     print(' Upload mission')
     vehicle.commands.upload()
-    print('done uplaoding')
+    print('done uploading')
 
 
 def download_mission():
@@ -110,10 +109,10 @@ def download_mission():
 
 def save_mission(aFileName):
     """
-    Save a mission in the Waypoint file format 
+    Save a mission in the Waypoint file format
     (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).
     """
-    print("\nSave mission from Vehicle to file: %s" % aFileName)    
+    print("\nSave mission from Vehicle to file: %s" % aFileName)
     #Download mission from vehicle
     missionlist = download_mission()
     #Add file-format information
@@ -128,8 +127,8 @@ def save_mission(aFileName):
     with open(aFileName, 'w') as file_:
         print(" Write mission to file")
         file_.write(output)
-        
-        
+
+
 def printfile(aFileName):
     """
     Print a mission file to demonstrate "round trip"
@@ -137,7 +136,7 @@ def printfile(aFileName):
     print("\nMission file: %s" % aFileName)
     with open(aFileName) as f:
         for line in f:
-            print(' %s' % line.strip())        
+            print(' %s' % line.strip())
 
 def loiter_upload_mission(aFileName):
     vehicle.mode = VehicleMode("LOITER")
@@ -147,21 +146,75 @@ def loiter_upload_mission(aFileName):
     vehicle.mode = VehicleMode("AUTO")
     log.info("Confirm Autopilot: %s" % vehicle.mode.name)
     log.info("Flying new mission")
+
+def arm_and_takeoff(vehicle, aTargetAltitude):
+    """
+    Arms vehicle and fly to aTargetAltitude.
+    """
+    print("Basic pre-arm checks")
+    # Don't try to arm until autopilot is ready
+    while not vehicle.is_armable:
+        print(" Waiting for vehicle to initialise...")
+        time.sleep(1)
+
+    print("Arming motors")
+    # Copter should arm in GUIDED mode
+    vehicle.mode = VehicleMode("GUIDED")
+    vehicle.armed = True
+
+    # Confirm vehicle armed before attempting to take off
+    while not vehicle.armed:
+        print(" Waiting for arming...")
+        time.sleep(1)
+
+    print("Taking off!")
+    vehicle.simple_takeoff(aTargetAltitude)  # Take off to target altitude
+
+    # Wait until the vehicle reaches a safe height before processing the goto
+    #  (otherwise the command after Vehicle.simple_takeoff will execute
+    #   immediately).
+    while True:
+        print(" Altitude: ", vehicle.location.global_relative_frame.alt)
+        # Break and return from function just below target altitude.
+        if vehicle.location.global_relative_frame.alt >= aTargetAltitude * 0.95:
+            print("Reached target altitude")
+            break
+        time.sleep(1)
+
+
+
+
+
+
 mission1in = 'mission.waypoints'
 mission1out = 'exportedmission.waypoints'
 mission2in = 'mission2.waypoints'
-mission2out ='exportedmission2.waypints'
+mission2out ='exportedmission2.waypoints'
 
 vehicle = initvehicle()
 
+print("Set default/target airspeed to 3")
+vehicle.airspeed = 3
+
 print("Autopilot Firmware version: %s" % vehicle.version)
 
-    
-upload_mission(mission1in)
-save_mission(mission1out)
+print("Going towards first point for 30 seconds ...")
+point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
+vehicle.simple_goto(point1)
 
-loiter_upload_mission(mission2in)
-save_mission_mission(mission2out)
+time.sleep(30)
+
+
+#vehicle.mode = VehicleMode("AUTO")
+#upload_mission(mission1in)
+#save_mission(mission1out)
+
+#time.sleep(20)
+
+#loiter_upload_mission(mission2in)
+#save_mission(mission2out)
+
+#time.sleep(20)
 
 #Close vehicle object before exiting script
 print("Close vehicle object")
