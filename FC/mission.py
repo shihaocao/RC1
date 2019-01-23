@@ -88,7 +88,7 @@ def upload_mission(aFileName):
     #Add new mission to vehicle
     for command in missionlist:
         cmds.add(command)
-    print(' Upload mission')
+    print(' Uploading mission')
     vehicle.commands.upload()
     print('done uploading')
 
@@ -192,29 +192,19 @@ mission2in = 'mission2.waypoints'
 mission2out ='exportedmission2.waypoints'
 
 vehicle = initvehicle()
+vehicle.block_until_ready(verbose=True)
 
 print("Set default/target airspeed to 3")
 vehicle.airspeed = 3
 
 print("Autopilot Firmware version: %s" % vehicle.version)
+time.sleep(10)
 
-print("Going towards first point for 30 seconds ...")
-point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
-vehicle.simple_goto(point1)
-
-time.sleep(30)
-
-
-#vehicle.mode = VehicleMode("AUTO")
-#upload_mission(mission1in)
-#save_mission(mission1out)
-
-#time.sleep(20)
+upload_mission(mission1in)
+save_mission(mission1out)
 
 #loiter_upload_mission(mission2in)
-#save_mission(mission2out)
-
-#time.sleep(20)
+#save_mission_mission(mission2out)
 
 #Close vehicle object before exiting script
 print("Close vehicle object")
