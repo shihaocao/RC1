@@ -28,7 +28,6 @@ arr2 = [float(i) for i in inp2]
 
 x = np.array(arr1)
 y = np.array(arr2)
-
 t, c, k = interpolate.splrep(x, y, s=0, k=4)
 print('''\
 t: {}
