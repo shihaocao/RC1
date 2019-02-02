@@ -33,7 +33,7 @@ def initvehicle():
     arglist = ['parameters','gps_0','armed','mode','attitude','system_status','location']
     startime = time.time()
     log.info ("Connecting")
-    vehicle= dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300)#, baud = 57600)
+    vehicle= dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300, baud = 57600)
     log.info("Time to connection: %s" % str(time.time()-startime))
 
     arm_and_takeoff(vehicle, 200)
