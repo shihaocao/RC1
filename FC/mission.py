@@ -3,7 +3,7 @@ import dronekit as dk
 from pymavlink import mavutil
 import time,sys,argparse,math
 import logging
-import dronekit_sitl
+#import dronekit_sitl
 import dronekit
 
 # heavyily influenced by https://github.com/dronekit/dronekit-python/blob/master/examples/mission_import_export/mission_import_export.py
@@ -32,11 +32,12 @@ def initvehicle():
         connection_string = '/dev/ttyS0'
     arglist = ['parameters','gps_0','armed','mode','attitude','system_status','location']
     startime = time.time()
-    log.info ("Connecting")
-    vehicle= dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300, baud = 57600)
+     log.info ("Connecting")
+    vehicle = dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300, baud = 57600)
     log.info("Time to connection: %s" % str(time.time()-startime))
 
-    arm_and_takeoff(vehicle, 200)
+#    arm_and_takeoff(vehicle, 0)
+    vehicle.mode = VehicleMode("GUIDED")
     return vehicle
 
 
@@ -186,26 +187,31 @@ def arm_and_takeoff(vehicle, aTargetAltitude):
 
 
 
-mission1in = 'mission.waypoints'
+mission1in = 'kevinright.waypoints'
 mission1out = 'exportedmission.waypoints'
-mission2in = 'mission2.waypoints'
+mission2in = 'kevinleft.waypoints'
 mission2out ='exportedmission2.waypoints'
 
 vehicle = initvehicle()
-vehicle.block_until_ready(verbose=True)
+print('taking off')
+#vehicle.block_until_ready()
 
 print("Set default/target airspeed to 3")
 vehicle.airspeed = 3
+print('sleep 30')
+#print("Autopilot Firmware version: %s" % vehicle.version)
+time.sleep(30)
 
-print("Autopilot Firmware version: %s" % vehicle.version)
-time.sleep(10)
-
+print('uploading first mission(left)')
 upload_mission(mission1in)
 save_mission(mission1out)
-
-#loiter_upload_mission(mission2in)
-#save_mission_mission(mission2out)
-
+print('on first mission')
+time.sleep(10)
+print('uploading second missino(right)')
+loiter_upload_mission(mission2in)
+save_mission_mission(mission2out)
+print('on second mission')
+time.sleep(1000)
 #Close vehicle object before exiting script
 print("Close vehicle object")
 vehicle.close()
