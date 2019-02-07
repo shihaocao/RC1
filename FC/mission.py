@@ -1,3 +1,5 @@
+
+mission2in = 'kevinleft.waypoints'
 from dronekit import connect, Command, LocationGlobal, VehicleMode, LocationGlobalRelative
 import dronekit as dk
 from pymavlink import mavutil
@@ -29,10 +31,11 @@ def initvehicle():
         if key != "y":
             exit(1)
     else:
-        connection_string = '/dev/ttyS0'
+#        connection_string = '/dev/serial0'    #Connection used for serial
+	connection_string = '/dev/ttyACM0'     #Connection used for USB
     arglist = ['parameters','gps_0','armed','mode','attitude','system_status','location']
     startime = time.time()
-     log.info ("Connecting")
+    log.info ("Connecting")
     vehicle = dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300, baud = 57600)
     log.info("Time to connection: %s" % str(time.time()-startime))
 
@@ -188,8 +191,8 @@ def arm_and_takeoff(vehicle, aTargetAltitude):
 
 
 mission1in = 'kevinright.waypoints'
-mission1out = 'exportedmission.waypoints'
 mission2in = 'kevinleft.waypoints'
+mission1out = 'exportedmission.waypoints'
 mission2out ='exportedmission2.waypoints'
 
 vehicle = initvehicle()
