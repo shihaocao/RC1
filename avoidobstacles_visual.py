@@ -145,14 +145,14 @@ def decideDirection(start,end,center):
 
 
 #Initializing the plane waypoints
-currentFlight = [[350,1000-a*40] for a in range(25)]
+currentFlight = [[a*40,a*40] for a in range(25)]
 
 planeX = [x for [x,y] in currentFlight]
 planeY = [y for [x,y] in currentFlight]
 originalX = [x for [x,y] in currentFlight]
 originalY = [y for [x,y] in currentFlight]
 
-obstacles = [[[300,300],100], [[500,300],100]]#[[700,400],150], [[200,600],120]]
+obstacles = [[[300,300],100], [[500,500],60]]#[[700,400],150], [[200,600],120]]
 obstacleX = []
 obstacleY = []
 for center,radius in obstacles:
