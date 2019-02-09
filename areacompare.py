@@ -6,7 +6,7 @@ from PIL import Image
 from threading import Thread
 import collections
 
-frame = cv2.VideoCapture( 1 )
+frame = cv2.VideoCapture( 0 )
 kern = np.ones( ( 1, 1 ), np.uint8 )
 
 i = 0

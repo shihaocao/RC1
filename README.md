@@ -15,6 +15,19 @@ Your prompt should begin with a (cv), if it doesn't, run:
 ```
 source ~/.bashrc
 ```
+## Testing the Pi
+Install MissionPlanner if not already installed. Once installed, plug in the radio telemetry dongle and press connect at the top right of MissionPlanner.
+Then connect the Raspberry Pi to the side of the Pixhawk using a USB cable.
+
+Open the FC folder and run mavproxy.py to test the connection:
+```
+python2 /home/pi/.virtualenvs/cv/bin/mavproxy.py
+```
+If this is successful, to start the mission run:
+```
+cd RC1/FC
+python2 mission.py
+```
 
 ## Files and Folders
 FC		Flight computer code
@@ -25,3 +38,5 @@ vids		Videos used for CV and OCR testing, not synced to the gihub repo
 tensorflow	Tests for tensorflow ocr
 IMAGEDETECTION	?
 Tests		Old CV code
+CV computer vision
+COMMUNICATION socket communication between Pi and Ground Station
