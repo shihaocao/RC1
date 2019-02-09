@@ -17,12 +17,7 @@ def createObstacle(center,radius):
     newPointsY = [((radius)*math.sin(theta/deltaT) + center[1]) for theta in range(int(deltaT*2*math.pi))]
     return (newPointsX,newPointsY)
 
-def goAroundObstacle(start,end,center,radius,clockwise):
-    #Step is constant for waypoint angular distance
-    step = radius*math.pi*100/(1000*scale)
-    newPathX = []
-    newPathY = []
-
+def getAngles(start,end,center):
     theta = None
     end_angle = None
     if center[0] == start[0]:
@@ -48,16 +43,24 @@ def goAroundObstacle(start,end,center,radius,clockwise):
             end_angle += math.pi
         if end_angle < 0:
             end_angle += math.tau
+    return theta,end_angle
+
+def goAroundObstacle(start,end,center,radius,clockwise):
+    #Step is constant for waypoint angular distance
+    step = radius*math.pi*100/(1000*scale)
+    newPathX = []
+    newPathY = []
+
+    theta,end_angle = getAngles(start,end,center)
 
 #    print(theta,end_angle)
-    if not clockwise:
-        step *= -1
+    if clockwise:
         if end_angle > theta:
             theta += math.tau
         while theta >= end_angle:
             newPathX.append((radius+PATH_BUFFER)*math.cos(theta) + center[0])
             newPathY.append((radius+PATH_BUFFER)*math.sin(theta) + center[1])
-            theta += step
+            theta -= step
     else:
         if end_angle < theta:
             end_angle += math.tau
@@ -112,47 +115,47 @@ def detectObstaclesInPath(flightPath,obstacles):
 
 def decideDirection(start,end,center):
     clockwise = True
-    if end[0] == start[0] or start[0] == end[0] or end[0] == center[0]:
-        if center[0] - end[0] > 0:
+    first = start
+    second = end
+    if start[1] > end[1]:
+        first = end
+        second = start
+    if second[0] == first[0] or first[0] == second[0] or second[0] == center[0] or first[0] == center[0]:
+        if center[0] - second[0] > 0 or center[0] - first[0] > 0:
             clockwise = False
         else:
             clockwise = True
     else:
-        first = start
-        second = end
-        if start[1] > end[1]:
-            first = end
-            second = start
-
         dy_firstCircle = center[1]-first[1]
         dx_firstCircle = center[0]-first[0]
-        if second[0]-first[0] > 0 and center[0]-first[0] < 0:
+        dy_firstSecond = second[1]-first[1]
+        dx_firstSecond = second[0]-first[0]
+        if center[0]-first[0] > 0 and center[0]-second[0] > 0:
             clockwise = True
-        elif second[0]-first[0] < 0 and center[0]-first[0] > 0:
+        elif center[0]-first[0] < 0 and center[0]-second[0] < 0:
             clockwise = False
         else:
             slope_firstCircle = (dy_firstCircle)/(dx_firstCircle)
-            slope_firstSecond = (second[1]-first[1])/(second[0]-first[0])
+            slope_firstSecond = (dy_firstSecond)/(dx_firstSecond)
             if slope_firstCircle > slope_firstSecond:
-                clockwise = True
-            else:
                 clockwise = False
-    if start[1] > end[1]:
-        return not clockwise
+            else:
+                clockwise = True
     return clockwise
 
 
 
 
 #Initializing the plane waypoints
-currentFlight = [[a*40,a*40] for a in range(25)]
+#currentFlight = [[a*40,a*40] for a in range(25)]
+currentFlight = [[20,20],[600,600]]
 
 planeX = [x for [x,y] in currentFlight]
 planeY = [y for [x,y] in currentFlight]
 originalX = [x for [x,y] in currentFlight]
 originalY = [y for [x,y] in currentFlight]
 
-obstacles = [[[300,300],100], [[500,500],60]]#[[700,400],150], [[200,600],120]]
+obstacles = [[[300,350],100]] #[[500,500],60], [[400,400],80], [[700,400],150], [[200,600],120]]
 obstacleX = []
 obstacleY = []
 for center,radius in obstacles:
@@ -162,9 +165,8 @@ for center,radius in obstacles:
 
 index,obstacle = detectObstaclesInPath(currentFlight,obstacles)
 count = 0
-while index != None and count < 10:
+while index != None and count < len(obstacles):
     center,radius = obstacle
-
     startIndex = index
     endIndex = index+1
     #Find the end waypoint (first waypoint exits obstacle)
@@ -187,13 +189,11 @@ while index != None and count < 10:
 #    print(index,currentFlight[index],obstacle)
     count += 1
 
-
 #Plotting stuff
 plt.plot(originalX,originalY,'yo')
 plt.plot(planeX,planeY,'ro')
 plt.plot(obstacleX,obstacleY, 'bo')
 #plt.plot(newPathX,newPathY, 'yo')
-
 
 plt.axis([0, 1000, 0, 1000])
 plt.show()
