@@ -6,8 +6,8 @@ import time,sys,argparse,math
 
 startime = time.time()
 print ("Connecting")
-connection_string = '127.0.0.1:14540'
-#connection_string = '/dev/ttyS0'
+#connection_string = '127.0.0.1:14540'
+connection_string = '/dev/ttyACM0'
 arglist = ['parameters','gps_0','armed','mode','attitude','system_status','location']
 vehicle = connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300, baud = 57600)
 
