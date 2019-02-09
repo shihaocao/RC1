@@ -1,5 +1,4 @@
 
-mission2in = 'kevinleft.waypoints'
 from dronekit import connect, Command, LocationGlobal, VehicleMode, LocationGlobalRelative
 import dronekit as dk
 from pymavlink import mavutil
@@ -39,8 +38,10 @@ def initvehicle():
     vehicle = dk.connect(connection_string, wait_ready = arglist, heartbeat_timeout = 300, baud = 57600)
     log.info("Time to connection: %s" % str(time.time()-startime))
 
-#    arm_and_takeoff(vehicle, 0)
-    vehicle.mode = VehicleMode("GUIDED")
+    vehicle.mode = VehicleMode("MANUAL")
+    print(vehicle.gps_0)
+    arm_and_takeoff(vehicle, 2)
+#    vehicle.mode = VehicleMode("GUIDED")
     return vehicle
 
 
@@ -155,11 +156,15 @@ def arm_and_takeoff(vehicle, aTargetAltitude):
     """
     Arms vehicle and fly to aTargetAltitude.
     """
+    print("is armable: %s" % vehicle.is_armable)
+    print("is armed %s" % vehicle.armed)
+    print(" GPS %s " % vehicle.gps_0)
+    print(" GPS Coordinates %s" % vehicle.location.global_frame)
     print("Basic pre-arm checks")
     # Don't try to arm until autopilot is ready
-    while not vehicle.is_armable:
-        print(" Waiting for vehicle to initialise...")
-        time.sleep(1)
+#    while not vehicle.is_armable:
+#        print(" Waiting for vehicle to initialise...")
+#        time.sleep(1)
 
     print("Arming motors")
     # Copter should arm in GUIDED mode
@@ -190,8 +195,8 @@ def arm_and_takeoff(vehicle, aTargetAltitude):
 
 
 
-mission1in = 'kevinright.waypoints'
-mission2in = 'kevinleft.waypoints'
+mission1in = 'shihaodeckright.waypoints'
+mission2in = 'shihaodeckleft.waypoints'
 mission1out = 'exportedmission.waypoints'
 mission2out ='exportedmission2.waypoints'
 
@@ -200,21 +205,21 @@ print('taking off')
 #vehicle.block_until_ready()
 
 print("Set default/target airspeed to 3")
-vehicle.airspeed = 3
-print('sleep 30')
-#print("Autopilot Firmware version: %s" % vehicle.version)
-time.sleep(30)
+vehicle.airspeed = 0.2
+print('sleep 10')
+print("Autopilot Firmware version: %s" % vehicle.version)
+time.sleep(10)
 
 print('uploading first mission(left)')
 upload_mission(mission1in)
 save_mission(mission1out)
 print('on first mission')
-time.sleep(10)
-print('uploading second missino(right)')
-loiter_upload_mission(mission2in)
-save_mission_mission(mission2out)
-print('on second mission')
-time.sleep(1000)
+time.sleep(20)
+#print('uploading second missino(right)')
+#loiter_upload_mission(mission2in)
+#save_mission(mission2out)
+#print('on second mission')
+#time.sleep(20)
 #Close vehicle object before exiting script
 print("Close vehicle object")
 vehicle.close()
