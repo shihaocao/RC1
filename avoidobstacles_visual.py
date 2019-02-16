@@ -155,7 +155,7 @@ planeY = [y for [x,y] in currentFlight]
 originalX = [x for [x,y] in currentFlight]
 originalY = [y for [x,y] in currentFlight]
 
-obstacles = [[[300,350],100]] #[[500,500],60], [[400,400],80], [[700,400],150], [[200,600],120]]
+obstacles = [[[300,350],100], [[500,500],60], [[400,400],80], [[700,400],150], [[200,600],120]]
 obstacleX = []
 obstacleY = []
 for center,radius in obstacles:
