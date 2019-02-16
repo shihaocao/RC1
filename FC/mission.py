@@ -209,7 +209,7 @@ def arm_and_takeoff(vehicle, aTargetAltitude):
 
 
 mission1in = 'shihaodeckright.waypoints'
-mission2in = 'shihaodeckleft.waypoints'
+mission2in = 'shihaoleft.waypoints'
 mission1out = 'exportedmission.waypoints'
 mission2out ='exportedmission2.waypoints'
 
@@ -227,7 +227,7 @@ print('uploading first mission(left)')
 upload_mission(mission1in)
 save_mission(mission1out)
 print('on first mission')
-time.sleep(20)
+time.sleep(50)
 #print('uploading second missino(right)')
 #loiter_upload_mission(mission2in)
 #save_mission(mission2out)
