@@ -7,7 +7,7 @@ import logging
 #import dronekit_sitl
 import dronekit
 
-# heavyily influenced by https://github.com/dronekit/dronekit-python/blob/master/examples/mission_import_export/mission_import_export.py
+# heavily influenced by https://github.com/dronekit/dronekit-python/blob/master/examples/mission_import_export/mission_import_export.py
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger('drone script')
 parser = argparse.ArgumentParser(description='Demonstrates mission import/export from a file.')
@@ -16,6 +16,19 @@ parser.add_argument('-s', action='store_true',
 args = parser.parse_args()
 
 sitl=None
+
+def set_servo(vehicle, servo_number, pwm_value):
+	pwm_value_int = int(pwm_value)
+	msg = vehicle.message_factory.command_long_encode(
+		0, 0,
+		mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
+		0,
+		servo_number,
+		pwm_value_int,
+		0,0,0,0,0
+		)
+	vehicle.send_mavlink(msg)
+
 def initvehicle():
     if args.s:
         sitl = dronekit_sitl.SITL()
