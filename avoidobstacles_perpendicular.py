@@ -110,8 +110,7 @@ def goAround(flight,obstacles,iteration,prev_angle = None):
                 dXCenter = point[0] - center[0]
                 dYCenter = point[1] - center[1]
                 mag = math.sqrt(dXCenter*dXCenter + dYCenter*dYCenter)
-                newPoint = [center[0] + dXCenter*new_distance/mag, center[1] + dYCenter*new_distance/mag]
-                new_distance = radius + BUFFER
+                new_distance = radius + BUFFER*2
                 newPoint = [center[0] + dXCenter*new_distance/mag, center[1] + dYCenter*new_distance/mag]
                 print("Tangent case")
             else:
@@ -120,28 +119,30 @@ def goAround(flight,obstacles,iteration,prev_angle = None):
                 lineCenter = [(point1[0]+point2[0])/2,(point1[1]+point2[1])/2]
                 dXCenter = lineCenter[0] - center[0]
                 dYCenter = lineCenter[1] - center[1]
-                distance = math.sqrt(math.pow(point2[0]-point1[0],2) + math.pow(point2[1]-point1[1],2))
-                mag = math.sqrt(dXCenter*dXCenter + dYCenter*dYCenter)
-                new_distance = distance*.25 + radius + BUFFER
-                if lineCenter[0] == center[0] and lineCenter[1] == center[1]:
-                    #Case where line passes through center of obstacle
-                    #Find perpendicular line
-                    angle = 0
-                    dX = point2[0] - point1[0]
-                    dY = point2[1] - point1[1]
-                    angle = slopeToAngle(dX,dY)
-                    choice_1 = angle - math.pi/2
-                    choice_2 = choice_1 + math.pi
-                    print("STUFF")
-                    print(choice_1,choice_2,prev_angle)
-                    new_angle = choice_1
-                    if prev_angle:
-                        if math.fabs(choice_1-prev_angle) > math.fabs(choice_2-prev_angle):
-                            new_angle = choice_2
-
-                    newPoint = [center[0] + new_distance*math.cos(new_angle), center[1] + new_distance*math.sin(new_angle)]
-                else:
-                    newPoint = [center[0] + dXCenter*new_distance/mag, center[1] + dYCenter*new_distance/mag]
+                dX = point2[0] - point1[0]
+                dY = point2[1] - point1[1]
+                angle = slopeToAngle(dX,dY)
+                angle_check = slopeToAngle(dXCenter,dYCenter)
+                choice_1 = angle - math.pi/2
+                choice_2 = choice_1 + math.pi
+                print("STUFF")
+                print(choice_1,choice_2,prev_angle)
+                new_angle = choice_1
+                if prev_angle:
+                    diff1 = min((choice_1-prev_angle)%(math.pi*2),(prev_angle-choice_1)%(math.pi*2))
+                    diff2 = min((choice_2-prev_angle)%(math.pi*2),(prev_angle-choice_2)%(math.pi*2))
+                    if diff1 > diff2:
+                        new_angle = choice_2
+                distToCenter = math.sqrt(math.pow(dXCenter,2) + math.pow(dYCenter,2))
+                distance = radius + distToCenter
+                if math.fabs(new_angle - angle_check) < .01:
+                    distance = radius - distToCenter
+                    print('hi')
+                print(new_angle-angle_check)
+                print("ANGLE",new_angle,angle_check)
+                new_distance = distance*.5 + radius + BUFFER*2
+                print("DISTANCE",distance,new_distance)
+                newPoint = [center[0] + new_distance*math.cos(new_angle), center[1] + new_distance*math.sin(new_angle)]
 
             tempFlight = flight[:count-1]
             temp = [prev,newPoint]
@@ -156,21 +157,7 @@ def goAround(flight,obstacles,iteration,prev_angle = None):
             tempCount = len(tempFlight)
             tempFlight.extend(flight[count+1:])
             print(tempFlight,iteration)
-            '''
-            obstacleX = []
-            obstacleY = []
-            for center, radius in obstacles:
-                oX, oY = createObstacle(center, radius)
-                obstacleX.extend(oX)
-                obstacleY.extend(oY)
 
-
-            plt.plot(obstacleX, obstacleY, 'bo')
-            plt.plot([a for [a,b] in tempFlight],[b for [a,b] in tempFlight], 'ro')
-            plt.plot([point1[0],point2[0]],[point1[1],point2[1]],'yo')
-            plt.axis([0, 1000, 0, 1000])
-            plt.show()
-            '''
             flight = tempFlight
             count = tempCount - 1
             break
