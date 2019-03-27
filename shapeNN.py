@@ -13,8 +13,15 @@ import matplotlib as plt
 batch_size = 128
 num_classes = 3
 epochs = 15
-TRAIN_DIR = 'C:/Users/Srikar/Documents/shapes_data'
-TEST_DIR = 'C:/Users/Srikar/Documents/TestData'
+
+#Srikar
+#TRAIN_DIR = 'C:/Users/Srikar/Documents/shapes_data'
+#TEST_DIR = 'C:/Users/Srikar/Documents/TestData'
+
+#Patrick
+TRAIN_DIR = 'C:/Users/zz198/Desktop/RC/shapes_data'
+TEST_DIR = 'C:/Users/zz198/Desktop/RC/testdata'
+
 IMG_SIZE = 64
 LR = 1e-3
 MODEL_NAME = 'dogsvscats-{}-{}.model'.format(LR, '2conv-basic') # just so we remember which saved model is which, sizes must match
@@ -60,7 +67,7 @@ def process_test_data():
         img = cv2.imread(path,cv2.IMREAD_GRAYSCALE)
         img = cv2.resize(img, (IMG_SIZE,IMG_SIZE))
         testing_data.append([np.array(img), img_num])
-        
+
     shuffle(testing_data)
     np.save('test_data.npy', testing_data)
     return testing_data
