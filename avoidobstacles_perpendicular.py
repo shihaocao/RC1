@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
+from scipy.interpolate import UnivariateSpline
 import math
 from numpy import arccos, array, dot, pi, cross
 from numpy.linalg import det, norm
 import numpy
 
-BUFFER = 25
+BUFFER = 40
 #distance between points
 def distance(x1, y1, x2, y2):
     return math.sqrt(math.pow((x2 - x1), 2) + math.pow((y2 - y1), 2))
@@ -15,30 +16,6 @@ def createObstacle(center, radius):
     newPointsX = [((radius) * math.cos(theta / deltaT) + center[0]) for theta in range(int(deltaT * 2 * math.pi))]
     newPointsY = [((radius) * math.sin(theta / deltaT) + center[1]) for theta in range(int(deltaT * 2 * math.pi))]
     return (newPointsX, newPointsY)
-
-def line_point_distance(A1, B1, P1):
-    """ segment line AB, point P, where each one is an array([x, y]) """
-    A = numpy.array(A1)
-    B = numpy.array(B1)
-    P = numpy.array(P1)
-    if all(A == P) or all(B == P):
-        return 0
-    temp = dot((P - A) / self_norm(P - A), (B - A) / self_norm(B - A))
-    #Math errors, sometimes it becomes 1.000000000002
-    if temp < -1:
-        temp = -1
-    elif temp > 1:
-        temp = 1
-    if arccos(temp) > pi / 2:
-        return norm(P - A)
-    temp = dot((P - B) / self_norm(P - B), (A - B) / self_norm(A - B))
-    if temp < -1:
-        temp = -1
-    elif temp > 1:
-        temp = 1
-    if arccos(temp) > pi / 2:
-        return self_norm(P - B)
-    return self_norm(cross(A-B, A-P))/self_norm(B-A)
 
 def getCircleLineIntersectionPoint(pointA, pointB, center, radius):
     baX = pointB[0] - pointA[0]
@@ -66,7 +43,7 @@ def getCircleLineIntersectionPoint(pointA, pointB, center, radius):
     return [p1,p2];
 
 def slopeToAngle(dX, dY):
-    angle = 0
+    angle = None
     if dX == 0:
         if dY > 0:
             angle = math.pi/2
@@ -172,12 +149,12 @@ def goAround(flight,obstacles,iteration,prev_angle = None):
     return flight
 
 #waypoints on flight path
-currentFlight = [[200, 200], [425, 425], [700,700]]
+currentFlight = [[100, 200], [450, 400], [800,600]]
 originalX = [x for [x, y] in currentFlight]
 originalY = [y for [x, y] in currentFlight]
 
 #creating obstacles
-obstacles = [[[300, 350], 100],[[550,550],80]]
+obstacles = [[[300, 400], 100],[[650,550],80]]
 obstacleX = []
 obstacleY = []
 for center, radius in obstacles:
@@ -188,10 +165,15 @@ for center, radius in obstacles:
 plane = goAround(currentFlight,obstacles,1)
 planeX = [x for [x, y] in plane]
 planeY = [y for [x, y] in plane]
+planeS = UnivariateSpline(planeX, planeY)
+planeXS = numpy.linspace(planeX[0], planeX[-1])
 #goAround(currentFlight,obstacles[0])
+
 #Plotting stuff
-plt.plot(originalX, originalY, 'yo')
-plt.plot(planeX, planeY, 'ro')
+planeS.set_smoothing_factor(0)
+plt.plot(planeXS, planeS(planeXS), 'r')
+plt.plot(originalX, originalY, 'g')
 plt.plot(obstacleX, obstacleY, 'bo')
 plt.axis([0, 1000, 0, 1000])
+plt.legend(("New Path", "Original Path", "Obstacle"))
 plt.show()
